@@ -1,0 +1,247 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #f8fafc;
+  color: #111827;
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(59, 130, 246, 0.14),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(168, 85, 247, 0.12),
+      transparent 32%
+    ),
+    #f8fafc;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #000;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  flex-grow: 1;
+}
+
+.page-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px 48px;
+}
+
+.hero-panel,
+.chart-panel,
+.detail-grid,
+.stations-grid,
+.controls-row {
+  margin-bottom: 32px;
+}
+
+.hero-panel {
+  display: grid;
+  gap: 24px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.summary-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.summary-card span {
+  display: block;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.summary-card strong {
+  font-size: 1.95rem;
+  display: block;
+}
+
+.controls-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-block {
+  display: grid;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.control-block label {
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.control-block input,
+.control-block select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #111827;
+}
+
+.secondary-button,
+button {
+  border: none;
+  border-radius: 16px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.secondary-button:hover,
+button:hover {
+  transform: translateY(-1px);
+  background: #1d4ed8;
+}
+
+.error-box {
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(254, 226, 226, 0.9);
+  color: #b91c1c;
+  margin-bottom: 24px;
+}
+
+.stations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.section-header h1,
+.panel-heading h2 {
+  margin: 0;
+}
+
+.section-header p,
+.panel-heading p {
+  margin: 8px 0 0;
+  color: #6b7280;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.pollutant-card {
+  padding: 22px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.pollutant-card span {
+  display: block;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.pollutant-card strong {
+  font-size: 2rem;
+  display: block;
+}
+
+.latest-row-note {
+  margin-top: 16px;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.chart-panel {
+  background: #fff;
+  padding: 26px;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.panel-heading {
+  margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+  .app-header,
+  .page-shell {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .summary-grid,
+  .detail-grid,
+  .controls-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,95 @@
+.station-card {
+  border-radius: 20px;
+  padding: 22px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(16, 24, 40, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 260px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.station-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 60px rgba(16, 24, 40, 0.12);
+}
+
+.station-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.station-card__header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.station-card__header span {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.station-card__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.station-card__metrics div {
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.station-card__metrics strong {
+  display: block;
+  font-size: 0.87rem;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.station-card__metrics span {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.station-card__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.details-link {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.level-good {
+  border-top: 4px solid #16a34a;
+}
+
+.level-moderate {
+  border-top: 4px solid #facc15;
+}
+
+.level-unhealthy-sensitive {
+  border-top: 4px solid #f97316;
+}
+
+.level-unhealthy {
+  border-top: 4px solid #dc2626;
+}
+
+.level-very-unhealthy {
+  border-top: 4px solid #9333ea;
+}
+
+.level-unknown {
+  border-top: 4px solid #6b7280;
+}
