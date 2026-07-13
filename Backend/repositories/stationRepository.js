@@ -2,14 +2,14 @@ import db from "../db.js";
 
 export const findAllStations = async () => {
   const result = await db.query(
-    "SELECT id, station_name, file_name FROM stations ORDER BY station_name ASC",
+    "SELECT id, station_name, file_name, latitude, longitude FROM stations ORDER BY station_name ASC",
   );
   return result.rows;
 };
 
 export const findStationById = async (id) => {
   const result = await db.query(
-    "SELECT id, station_name, file_name FROM stations WHERE id = $1",
+    "SELECT id, station_name, file_name, latitude, longitude, address FROM stations WHERE id = $1",
     [id],
   );
   return result.rows[0];
@@ -79,6 +79,8 @@ export const findLatestReadingForAllStations = async () => {
     `SELECT s.id AS station_id,
             s.station_name,
             s.file_name,
+            s.latitude,
+            s.longitude,
             a.date,
             COALESCE(a.pm25, (
               SELECT pm25
@@ -127,10 +129,18 @@ export const findLatestReadingForAllStations = async () => {
                 AND co IS NOT NULL
               ORDER BY recorded_at DESC
               LIMIT 1
-            )) AS co
+            )) AS co,
+            COALESCE(a.nh3, (
+              SELECT nh3
+              FROM aqi_data
+              WHERE station_id = s.id
+                AND nh3 IS NOT NULL
+              ORDER BY recorded_at DESC
+              LIMIT 1
+            )) AS nh3
      FROM stations s
      JOIN LATERAL (
-       SELECT pm25, pm10, ozone, no2, so2, co, recorded_at AS date
+       SELECT pm25, pm10, ozone, no2, so2, co, nh3, recorded_at AS date
        FROM aqi_data
        WHERE station_id = s.id
        ORDER BY recorded_at DESC NULLS LAST

@@ -82,58 +82,6 @@ CREATE TABLE aqi_data (
 );
 
 
------------- CREATE 'temp_aqi_import' TABLE ------------
-CREATE TABLE temp_aqi_import (
-    "Date" TEXT,
-    "PM2.5" TEXT,
-    "PM10" TEXT,
-    "NO2" TEXT,
-    "NH3" TEXT,
-    "SO2" TEXT,
-    "CO" TEXT,
-    "Ozone" TEXT,
-
-    "PM2.5_Lag1" TEXT,
-    "PM2.5_Lag7" TEXT,
-    "PM2.5_Lag14" TEXT,
-    "PM2.5_7Day_MA" TEXT,
-
-    "PM10_Lag1" TEXT,
-    "PM10_Lag7" TEXT,
-    "PM10_Lag14" TEXT,
-    "PM10_7Day_MA" TEXT,
-
-    "NO2_Lag1" TEXT,
-    "NO2_Lag7" TEXT,
-    "NO2_Lag14" TEXT,
-    "NO2_7Day_MA" TEXT,
-
-    "NH3_Lag1" TEXT,
-    "NH3_Lag7" TEXT,
-    "NH3_Lag14" TEXT,
-    "NH3_7Day_MA" TEXT,
-
-    "SO2_Lag1" TEXT,
-    "SO2_Lag7" TEXT,
-    "SO2_Lag14" TEXT,
-    "SO2_7Day_MA" TEXT,
-
-    "CO_Lag1" TEXT,
-    "CO_Lag7" TEXT,
-    "CO_Lag14" TEXT,
-    "CO_7Day_MA" TEXT,
-
-    "Ozone_Lag1" TEXT,
-    "Ozone_Lag7" TEXT,
-    "Ozone_Lag14" TEXT,
-    "Ozone_7Day_MA" TEXT,
-
-    "Month" TEXT,
-    "Day_of_Week" TEXT,
-    "Is_Weekend" TEXT
-);
-
-
 ------------ CREATE 'users' TABLE ------------
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,

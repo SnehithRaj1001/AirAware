@@ -1,0 +1,101 @@
+.map-page {
+    padding-bottom: 40px;
+}
+
+.map-container-wrapper {
+    margin-top: 24px;
+    z-index: 1;
+}
+
+.map-tooltip {
+    padding: 4px 8px;
+    font-family: inherit;
+}
+
+.map-tooltip strong {
+    display: block;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.map-popup-card {
+    min-width: 200px;
+    font-family: inherit;
+}
+
+.map-popup-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.map-popup-card .address {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.map-popup-card .aqi-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.map-popup-card .pollutants-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+}
+
+.map-popup-card .pollutant-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.map-popup-card .pollutant-item span {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.map-popup-card .pollutant-item strong {
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.map-popup-card .view-details-link {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.map-popup-card .view-details-link:hover {
+    transform: translateX(4px);
+}
+
+/* Customizing Leaflet Popup */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.leaflet-popup-content {
+    margin: 8px 12px;
+}
+
+.leaflet-container {
+    font-family: 'Outfit', sans-serif !important;
+}

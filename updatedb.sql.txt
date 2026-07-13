@@ -1,0 +1,127 @@
+-- Clear temporary table first
+TRUNCATE TABLE temp_aqi_import;
+
+-- Import Akola CSV into temporary table
+COPY temp_aqi_import
+FROM 'D:/Anurag_Stuff/Programming/AQI assets/AQI-DATASET/DATASET/Data/CSVs/Mumbai_Siddharth_Nagar-Worli__Mumbai_-_IITM.csv'
+DELIMITER ','
+CSV HEADER;
+
+-- Insert data into aqi_data table
+INSERT INTO aqi_data (
+    station_id,
+    station_name,
+    recorded_at,
+
+    pm25,
+    pm10,
+    no2,
+    nh3,
+    so2,
+    co,
+    ozone,
+
+    pm25_lag1,
+    pm25_lag7,
+    pm25_lag14,
+    pm25_7day_ma,
+
+    pm10_lag1,
+    pm10_lag7,
+    pm10_lag14,
+    pm10_7day_ma,
+
+    no2_lag1,
+    no2_lag7,
+    no2_lag14,
+    no2_7day_ma,
+
+    nh3_lag1,
+    nh3_lag7,
+    nh3_lag14,
+    nh3_7day_ma,
+
+    so2_lag1,
+    so2_lag7,
+    so2_lag14,
+    so2_7day_ma,
+
+    co_lag1,
+    co_lag7,
+    co_lag14,
+    co_7day_ma,
+
+    ozone_lag1,
+    ozone_lag7,
+    ozone_lag14,
+    ozone_7day_ma,
+
+    month,
+    day_of_week,
+    is_weekend
+)
+
+SELECT
+    s.id,
+    s.station_name,
+
+    TO_TIMESTAMP(t."Date", 'YYYY-MM-DD'),
+
+    NULLIF(t."PM2.5", '')::DECIMAL,
+    NULLIF(t."PM10", '')::DECIMAL,
+    NULLIF(t."NO2", '')::DECIMAL,
+    NULLIF(t."NH3", '')::DECIMAL,
+    NULLIF(t."SO2", '')::DECIMAL,
+    NULLIF(t."CO", '')::DECIMAL,
+    NULLIF(t."Ozone", '')::DECIMAL,
+
+    NULLIF(t."PM2.5_Lag1", '')::DECIMAL,
+    NULLIF(t."PM2.5_Lag7", '')::DECIMAL,
+    NULLIF(t."PM2.5_Lag14", '')::DECIMAL,
+    NULLIF(t."PM2.5_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."PM10_Lag1", '')::DECIMAL,
+    NULLIF(t."PM10_Lag7", '')::DECIMAL,
+    NULLIF(t."PM10_Lag14", '')::DECIMAL,
+    NULLIF(t."PM10_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."NO2_Lag1", '')::DECIMAL,
+    NULLIF(t."NO2_Lag7", '')::DECIMAL,
+    NULLIF(t."NO2_Lag14", '')::DECIMAL,
+    NULLIF(t."NO2_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."NH3_Lag1", '')::DECIMAL,
+    NULLIF(t."NH3_Lag7", '')::DECIMAL,
+    NULLIF(t."NH3_Lag14", '')::DECIMAL,
+    NULLIF(t."NH3_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."SO2_Lag1", '')::DECIMAL,
+    NULLIF(t."SO2_Lag7", '')::DECIMAL,
+    NULLIF(t."SO2_Lag14", '')::DECIMAL,
+    NULLIF(t."SO2_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."CO_Lag1", '')::DECIMAL,
+    NULLIF(t."CO_Lag7", '')::DECIMAL,
+    NULLIF(t."CO_Lag14", '')::DECIMAL,
+    NULLIF(t."CO_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."Ozone_Lag1", '')::DECIMAL,
+    NULLIF(t."Ozone_Lag7", '')::DECIMAL,
+    NULLIF(t."Ozone_Lag14", '')::DECIMAL,
+    NULLIF(t."Ozone_7Day_MA", '')::DECIMAL,
+
+    NULLIF(t."Month", '')::INTEGER,
+    t."Day_of_Week",
+
+    CASE
+        WHEN LOWER(t."Is_Weekend") = 'true' THEN TRUE
+        ELSE FALSE
+    END
+
+FROM temp_aqi_import t
+
+JOIN stations s
+ON s.file_name = 'Mumbai_Siddharth_Nagar-Worli__Mumbai_-_IITM.csv'
+
+ON CONFLICT (station_id, recorded_at)
+DO NOTHING;

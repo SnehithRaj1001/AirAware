@@ -103,14 +103,12 @@ export default function Login() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>AirAware</h1>
-        <p className="subtitle">Real-time Air Quality Monitoring</p>
 
         {error && <div className="error-message">{error}</div>}
 
         {isLogin ? (
           <form onSubmit={handleLogin} className="auth-form">
-            <h2>Login</h2>
+            <h1>Login</h1>
             <div className="form-group">
               <label htmlFor="login-username">Username</label>
               <input
@@ -131,7 +129,7 @@ export default function Login() {
                 value={loginForm.password}
                 onChange={handleLoginChange}
                 placeholder="Enter your password"
-              />
+                />
             </div>
             <button type="submit" disabled={loading} className="submit-btn">
               {loading ? "Logging in..." : "Login"}
@@ -152,7 +150,7 @@ export default function Login() {
           </form>
         ) : (
           <form onSubmit={handleRegister} className="auth-form">
-            <h2>Register</h2>
+            <h1>Register</h1>
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="register-firstName">First Name</label>

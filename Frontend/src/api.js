@@ -81,6 +81,10 @@ export const fetchAqiTrends = async (stationId) => {
   return (await apiClient.get(`/aqi/trends/${stationId}`)).data;
 };
 
+export const fetchStationForecast = async (stationId) => {
+  return (await apiClient.get(`/stations/${stationId}/forecast`)).data;
+};
+
 export const fetchDashboardSummary = async () => {
   return (await apiClient.get("/dashboard/summary")).data;
 };

@@ -23,6 +23,9 @@ export default function Navbar() {
           <NavLink to="/" end className={({ isActive }) => isActive ? "active" : ""}>
             Stations
           </NavLink>
+          <NavLink to="/map" className={({ isActive }) => isActive ? "active" : ""}>
+            Map View
+          </NavLink>
 
           {token && user ? (
             <>

@@ -42,7 +42,7 @@ export const getNews = async (req, res, next) => {
 export const getAllStations = async (req, res, next) => {
   try {
     const result = await db.query(
-      `SELECT s.id, s.station_name, s.file_name
+      `SELECT s.id, s.station_name, s.file_name, s.latitude, s.longitude, s.address
        FROM stations s
        ORDER BY s.station_name`
     );
@@ -85,6 +85,9 @@ export const getAllStations = async (req, res, next) => {
           id: row.id,
           stationName: row.station_name,
           fileName: row.file_name,
+          latitude: row.latitude != null ? Number(row.latitude) : null,
+          longitude: row.longitude != null ? Number(row.longitude) : null,
+          address: row.address,
           latestAqi,
         };
       })
@@ -101,7 +104,7 @@ export const getStationWithAqi = async (req, res, next) => {
     const stationId = Number(req.params.stationId);
 
     const result = await db.query(
-      `SELECT s.id, s.station_name, s.file_name
+      `SELECT s.id, s.station_name, s.file_name, s.latitude, s.longitude, s.address
        FROM stations s
        WHERE s.id = $1`,
       [stationId]
@@ -155,6 +158,9 @@ export const getStationWithAqi = async (req, res, next) => {
       id: result.rows[0].id,
       stationName: result.rows[0].station_name,
       fileName: result.rows[0].file_name,
+      latitude: result.rows[0].latitude != null ? Number(result.rows[0].latitude) : null,
+      longitude: result.rows[0].longitude != null ? Number(result.rows[0].longitude) : null,
+      address: result.rows[0].address,
       aqiHistory: aqiHistory.rows,
       latestAqi,
     };

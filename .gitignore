@@ -2,3 +2,13 @@ node_modules/
 .env
 dist/
 build/
+
+# Dataset - raw and processed data
+DATASET/downloaded_data/
+DATASET/processed_data/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pkl
+*.joblib
