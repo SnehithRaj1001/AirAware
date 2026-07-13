@@ -1,285 +1,113 @@
-# AirAware - Air Quality Monitoring Web Application
+# AirAware - Air Quality Monitoring & Forecasting
 
-A full-stack web application for monitoring air quality data across multiple stations, featuring real-time dashboards, historical trends, and detailed pollutant analysis.
+A full-stack web application for monitoring and forecasting air quality across 88 stations in Maharashtra, India, using XGBoost ML models trained on historical CPCB data.
 
-## 🚀 Features
+## Features
 
-- **Real-time Dashboard**: View latest air quality readings from all stations
-- **Station Details**: Detailed pollutant information for individual stations
-- **Trend Analysis**: Interactive charts showing air quality trends over time
-- **Search & Filter**: Find stations by name and sort by pollution levels
-- **Color-coded Alerts**: Visual indicators for air quality levels based on PM2.5 values
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Live Dashboard** — Latest AQI readings from all 88 stations
+- **Forecasting** — XGBoost-powered 7-day air quality predictions
+- **Trend Analysis** — Interactive charts for all pollutants
+- **Color-coded AQI alerts** — EPA standard PM2.5 levels
+- **Responsive Design** — Desktop and mobile support
 
-## 🛠 Tech Stack
+## Tech Stack
 
-### Backend
+| Layer | Tech |
+|---|---|
+| Frontend | React 19, Vite, Recharts |
+| Backend | Node.js, Express.js |
+| Database | PostgreSQL |
+| ML Models | Python, XGBoost |
+| Data Pipeline | Python, Selenium, Pandas |
 
-- **Node.js** with **Express.js**
-- **PostgreSQL** database
-- **pg** library for database operations
-- **CORS** for cross-origin requests
-- **dotenv** for environment configuration
-
-### Frontend
-
-- **React 19** with modern hooks
-- **React Router** for navigation
-- **Recharts** for data visualization
-- **Vite** for fast development and building
-- **CSS** with modern responsive design
-
-## 📊 Database Schema
-
-### stations table
-
-```sql
-CREATE TABLE stations (
-  id SERIAL PRIMARY KEY,
-  station_name TEXT NOT NULL,
-  source_url TEXT
-);
-```
-
-### aqi_data table
-
-```sql
-CREATE TABLE aqi_data (
-  id SERIAL PRIMARY KEY,
-  date TIMESTAMP,
-  pm25 FLOAT,
-  pm10 FLOAT,
-  o3 FLOAT,
-  no2 FLOAT,
-  so2 FLOAT,
-  co FLOAT,
-  station_id INT REFERENCES stations(id)
-);
-```
-
-## 🔌 API Endpoints
-
-### Station APIs
-
-- `GET /stations` - Get all stations with latest readings
-- `GET /stations/:id` - Get station details
-
-### AQI APIs
-
-- `GET /aqi/:stationId` - Get latest AQI data for a station
-- `GET /aqi/history/:stationId` - Get historical AQI data
-- `GET /aqi/station/:stationId` - Get all AQI records for a station
-- `GET /aqi/trends/:stationId` - Get time-series data for charts
-
-### Dashboard APIs
-
-- `GET /dashboard/summary` - Get dashboard summary (average PM2.5, highest/lowest stations)
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd AirAware
-   ```
-
-2. **Set up the database**
-   - Create a PostgreSQL database named `AirAware`
-   - Run the SQL commands from the Database Schema section above to create tables
-
-3. **Backend Setup**
-
-   ```bash
-   cd Backend
-   npm install
-   ```
-
-   Create a `.env` file in the Backend directory:
-
-   ```env
-   DB_USER=postgres
-   DB_HOST=localhost
-   DB_NAME=AirAware
-   DB_PASSWORD=your_password
-   DB_PORT=5432
-   PORT=4000
-   ```
-
-4. **Frontend Setup**
-
-   ```bash
-   cd ../Frontend
-   npm install
-   ```
-
-   Create a `.env` file in the Frontend directory (optional):
-
-   ```env
-   VITE_API_BASE_URL=http://localhost:4000
-   ```
-
-### Running the Application
-
-1. **Start the Backend**
-
-   ```bash
-   cd Backend
-   npm start
-   ```
-
-   The backend will run on http://localhost:4000
-
-2. **Start the Frontend**
-
-   ```bash
-   cd Frontend
-   npm run dev
-   ```
-
-   The frontend will run on http://localhost:5173
-
-3. **Access the Application**
-   Open your browser and navigate to http://localhost:5173
-
-## 📱 Usage
-
-### Dashboard
-
-- View all monitoring stations with their latest PM2.5 and PM10 readings
-- See overall air quality summary (average, highest, and lowest PM2.5 stations)
-- Search stations by name
-- Sort stations by name or PM2.5 levels
-
-### Station Details
-
-- Click "View details" on any station card to see comprehensive pollutant data
-- View historical trends with interactive line charts
-- See all pollutants: PM2.5, PM10, O₃, NO₂, SO₂, CO
-
-### Trends Analysis
-
-- Select any station from the dropdown
-- View time-series charts for multiple pollutants
-- Analyze air quality patterns over time
-
-## 🎨 Air Quality Color Coding
-
-The application uses EPA-standard color coding for PM2.5 levels:
-
-- 🟢 **Good** (0-12 µg/m³): Green
-- 🟡 **Moderate** (12.1-35.4 µg/m³): Yellow
-- 🟠 **Unhealthy for Sensitive Groups** (35.5-55.4 µg/m³): Orange
-- 🔴 **Unhealthy** (55.5-150.4 µg/m³): Red
-- 🟣 **Very Unhealthy** (150.5+ µg/m³): Purple
-- ⚪ **Unknown**: Gray
-
-## 🏗 Project Structure
+## Project Structure
 
 ```
 AirAware/
-├── Backend/
-│   ├── controllers/          # Route handlers
-│   ├── repositories/         # Database queries
-│   ├── routes/              # API route definitions
-│   ├── services/            # Business logic
-│   ├── middleware/          # Express middleware
-│   ├── server.js            # Main server file
-│   ├── db.js               # Database connection
-│   └── package.json
-├── Frontend/
-│   ├── src/
-│   │   ├── components/      # Reusable React components
-│   │   ├── pages/          # Page components
-│   │   ├── api.js          # API client functions
-│   │   ├── App.jsx         # Main app component
-│   │   ├── App.css         # Global styles
-│   │   └── main.jsx        # App entry point
-│   ├── public/             # Static assets
-│   └── package.json
-└── README.md
+├── Backend/            # Express.js API server
+├── Frontend/           # React app
+├── DATASET/            # Data pipeline scripts
+│   ├── 1-fetchStationNames.py
+│   ├── 2-downloadFiles.py
+│   ├── 3-updater.py       # Selenium scraper (CPCB portal)
+│   ├── 4-mergeFiles.py    # Merge + preprocess + feature engineering
+│   ├── 5-pushToDB.py      # Push processed CSVs to PostgreSQL
+│   ├── init_db.py         # Create DB tables from db.sql
+│   ├── init_stations.py   # Seed stations table
+│   ├── downloaded_data/   # Raw CSVs (gitignored)
+│   └── processed_data/    # ML-ready CSVs (gitignored)
+├── models/             # Trained XGBoost .pkl files
+├── db.sql              # Database schema
+├── Model-XGBoost.py    # XGBoost training script
+└── .env                # DB credentials (gitignored)
 ```
 
-## 🔧 Development
+## Database Schema
 
-### Backend Development
+**stations** — 88 MPCB/IITM/BMC monitoring stations with lat/lon and address.
+
+**aqi_data** — Daily readings per station with 39 features: raw pollutants (`pm25`, `pm10`, `no2`, `nh3`, `so2`, `co`, `ozone`), lag features (`_lag1`, `_lag7`, `_lag14`), 7-day moving averages, and date features (`month`, `day_of_week`, `is_weekend`).
+
+## Getting Started
+
+### Prerequisites
+- Node.js v16+
+- PostgreSQL v12+
+- Python 3.10+
+
+### 1. Configure credentials
+
+Fill in `.env` at the project root:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=your_password
+```
+
+### 2. Set up the database
 
 ```bash
-cd Backend
-npm run dev  # Uses nodemon for auto-restart
+python DATASET/init_db.py       # Creates tables
+python DATASET/init_stations.py # Seeds 88 stations
 ```
 
-### Frontend Development
+### 3. Populate data
 
 ```bash
-cd Frontend
-npm run dev   # Vite dev server with HMR
-npm run build # Production build
-npm run preview # Preview production build
+python DATASET/3-updater.py     # Scrape data from CPCB (requires Chrome)
+python DATASET/4-mergeFiles.py  # Merge years, interpolate, engineer features
+python DATASET/5-pushToDB.py    # Push to database
 ```
 
-## 📝 API Response Format
+> **Note:** `3-updater.py` opens a browser and requires you to solve a CAPTCHA manually on the first run. If a station has no data for the selected range the scraper skips it automatically.
 
-All API responses follow a consistent JSON structure:
+### 4. Run the app
 
-```json
-{
-  "stations": [...],
-  "station": {...},
-  "latest": {...},
-  "history": [...],
-  "records": [...],
-  "trends": [...],
-  "summary": {...}
-}
+```bash
+# Backend
+cd Backend && npm install && npm run dev   # http://localhost:4000
+
+# Frontend
+cd Frontend && npm install && npm run dev  # http://localhost:5173
 ```
 
-Error responses:
+## Daily Data Updates
 
-```json
-{
-  "error": "Error message description"
-}
-```
+Re-run steps 3 → 4 → 5 above. The scraper automatically resumes from the last recorded date per station, and the database insert uses `ON CONFLICT DO NOTHING` to skip duplicates.
 
-## 🚀 Deployment
+## Air Quality Color Coding (PM2.5)
 
-### Backend Deployment
+| Level | Range |
+|---|---|
+| 🟢 Good | 0–12 µg/m³ |
+| 🟡 Moderate | 12.1–35.4 µg/m³ |
+| 🟠 Unhealthy for Sensitive Groups | 35.5–55.4 µg/m³ |
+| 🔴 Unhealthy | 55.5–150.4 µg/m³ |
+| 🟣 Very Unhealthy | 150.5+ µg/m³ |
 
-1. Set environment variables in your deployment platform
-2. Ensure PostgreSQL database is accessible
-3. Run `npm start`
+## License
 
-### Frontend Deployment
-
-1. Build the frontend: `npm run build`
-2. Serve the `dist` folder with any static file server
-3. Update `VITE_API_BASE_URL` to point to your deployed backend
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the ISC License.
-
-## 📞 Support
-
-For questions or issues, please open an issue on the GitHub repository.
-
----
-
-Built with ❤️ for cleaner air and better health monitoring.
+ISC License
