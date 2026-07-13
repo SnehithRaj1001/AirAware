@@ -1,0 +1,9 @@
+pandas
+numpy
+xgboost
+scikit-learn
+psycopg2-binary
+python-dotenv
+selenium
+webdriver-manager
+joblib

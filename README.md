@@ -67,14 +67,20 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 ```
 
-### 2. Set up the database
+### 2. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set up the database
 
 ```bash
 python DATASET/init_db.py       # Creates tables
 python DATASET/init_stations.py # Seeds 88 stations
 ```
 
-### 3. Populate data
+### 4. Populate data
 
 ```bash
 python DATASET/3-updater.py     # Scrape data from CPCB (requires Chrome)
@@ -84,7 +90,7 @@ python DATASET/5-pushToDB.py    # Push to database
 
 > **Note:** `3-updater.py` opens a browser and requires you to solve a CAPTCHA manually on the first run. If a station has no data for the selected range the scraper skips it automatically.
 
-### 4. Run the app
+### 5. Run the app
 
 ```bash
 # Backend
