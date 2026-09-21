@@ -54,10 +54,21 @@
   padding-left: 20px;
 }
 
+.user-name-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.user-name-link:hover .user-name {
+  color: var(--accent);
+}
+
 .user-name {
   font-size: 14px;
   font-weight: 700;
   color: var(--primary);
+  transition: color var(--transition-base);
 }
 
 .logout-btn {

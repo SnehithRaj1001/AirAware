@@ -35,16 +35,23 @@ apiClient.interceptors.response.use(
 export const authAPI = {
   login: (username, password) =>
     apiClient.post("/auth/login", { username, password }),
-  register: (firstName, lastName, username, email, password, location) =>
-    apiClient.post("/auth/register", {
-      firstName,
+  register: (payload, lastName, username, email, password, location) => {
+    // If passed as an object payload
+    if (typeof payload === "object" && payload !== null) {
+      return apiClient.post("/auth/register", payload);
+    }
+    // Backward compatibility if called with positional arguments
+    return apiClient.post("/auth/register", {
+      firstName: payload,
       lastName,
       username,
       email,
       password,
       location,
-    }),
+    });
+  },
   getProfile: () => apiClient.get("/auth/profile"),
+  updateProfile: (profileData) => apiClient.put("/auth/profile", profileData),
 };
 
 // User APIs (authenticated)

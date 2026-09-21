@@ -35,10 +35,15 @@ export default function Navbar() {
               <NavLink to="/trends" className={({ isActive }) => isActive ? "active" : ""}>
                 Trends
               </NavLink>
+              <NavLink to="/profile" className={({ isActive }) => isActive ? "active" : ""}>
+                My Profile
+              </NavLink>
               <div className="user-section">
-                <span className="user-name">
-                  {user.firstName} {user.lastName}
-                </span>
+                <NavLink to="/profile" className="user-name-link">
+                  <span className="user-name">
+                    {user.firstName} {user.lastName}
+                  </span>
+                </NavLink>
                 <button onClick={handleLogout} className="logout-btn">
                   Logout
                 </button>
