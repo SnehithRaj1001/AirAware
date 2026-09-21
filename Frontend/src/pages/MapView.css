@@ -97,5 +97,5 @@
 }
 
 .leaflet-container {
-    font-family: 'Outfit', sans-serif !important;
+    font-family: var(--font-sans) !important;
 }

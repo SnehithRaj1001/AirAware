@@ -66,7 +66,7 @@ export const findAllAqiRecords = async (stationId) => {
 
 export const findTrendsByStation = async (stationId) => {
   const result = await db.query(
-    `SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co
+    `SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co, nh3
      FROM aqi_data
      WHERE station_id = $1
      ORDER BY recorded_at ASC`,

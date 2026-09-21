@@ -28,9 +28,16 @@
   color: var(--accent);
 }
 
+.logo-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 .app-nav {
   display: flex;
   gap: 32px;
+  align-items: center;
 }
 
 .app-nav a {
@@ -88,12 +95,120 @@
   transform: translateY(-1px);
 }
 
-@media (max-width: 768px) {
-  .header-content { flex-direction: row; justify-content: space-between; }
-  .app-nav { display: none; }
+/* Hamburger Button */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1100;
 }
 
+.hamburger-btn span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
+.hamburger-btn.hamburger-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
 
+.hamburger-btn.hamburger-open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
 
+.hamburger-btn.hamburger-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
 
+/* Backdrop */
+.nav-backdrop {
+  display: none;
+}
+
+/* Hide subtitle on medium screens */
+@media (max-width: 1024px) {
+  .logo-subtitle {
+    display: none;
+  }
+}
+
+/* Mobile Nav */
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    animation: backdrop-fade-in 0.25s ease-out;
+  }
+
+  @keyframes backdrop-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .app-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100vh;
+    background: #ffffff;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 80px 24px 32px;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
+    z-index: 1002;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+  }
+
+  .app-nav.nav-open {
+    transform: translateX(0);
+  }
+
+  .app-nav a {
+    font-size: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app-nav a:last-child {
+    border-bottom: none;
+  }
+
+  .user-section {
+    flex-direction: column;
+    border-left: none;
+    padding-left: 0;
+    padding-top: 20px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .logout-btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 14px;
+  }
+}

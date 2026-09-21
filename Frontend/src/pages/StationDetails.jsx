@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchLatestAqi, fetchAqiTrends } from "../api.js";
 import PollutantChart from "../components/PollutantChart.jsx";
+import "./StationDetails.css";
 
 const StationDetails = () => {
   const { id } = useParams();
@@ -22,6 +23,7 @@ const StationDetails = () => {
         setData(latestPayload);
         setTrends(trendsPayload.trends.map(t => ({
           ...t,
+          o3: t.o3 ?? t.ozone,
           date: new Date(t.date).toLocaleDateString()
         })));
       } catch (err) {
@@ -33,7 +35,7 @@ const StationDetails = () => {
     loadStationData();
   }, [id]);
 
-  if (loading) return <div className="page-shell"><div className="spinner"></div></div>;
+  if (loading) return <div className="page-shell"><div className="loading-container"><div className="spinner"></div></div></div>;
   if (error) return <div className="page-shell"><div className="error-box">{error}</div></div>;
   if (!data) return <div className="page-shell">No data found</div>;
 
@@ -61,67 +63,47 @@ const StationDetails = () => {
 
   return (
     <main className="page-shell">
-      <div className="section-header" style={{ marginBottom: '32px' }}>
+      <div className="station-details-header">
         <div>
-          <h1 style={{ fontSize: '32px', fontWeight: 800 }}>{station.station_name}</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Real-time Air Quality Monitoring & Analysis</p>
+          <h1>{station.station_name}</h1>
+          <p>Real-time Air Quality Monitoring & Analysis</p>
         </div>
         <div>
-          <Link to="/" className="secondary-button" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Link to="/" className="secondary-button">
             <span>←</span> Back to Dashboard
           </Link>
         </div>
       </div>
 
-      <div className="station-details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px' }}>
+      <div className="station-details-grid">
         {/* Main Content */}
         <div className="details-main">
           {/* AQI Hero Card */}
-          <div className="aqi-hero" style={{ 
-            background: status.bg, 
-            padding: '40px', 
-            borderRadius: 'var(--radius-lg)', 
-            border: `1px solid ${status.color}20`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '24px'
-          }}>
-            <div>
-              <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', color: status.color, letterSpacing: '1px' }}>Current Air Quality</span>
-              <h2 style={{ fontSize: '48px', fontWeight: 900, color: '#0f172a', margin: '8px 0' }}>{status.label}</h2>
-              <p style={{ color: '#64748b', maxWidth: '300px' }}>The overall air quality index is currently {status.label.toLowerCase()} for this location.</p>
+          <div className="aqi-hero" style={{ background: status.bg, border: `1px solid ${status.color}20` }}>
+            <div className="aqi-hero-text">
+              <span className="aqi-hero-label" style={{ color: status.color }}>Current Air Quality</span>
+              <h2 className="aqi-hero-status">{status.label}</h2>
+              <p className="aqi-hero-desc">The overall air quality index is currently {status.label.toLowerCase()} for this location.</p>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ 
-                width: '120px', 
-                height: '120px', 
-                borderRadius: '50%', 
-                background: '#fff', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
-                border: `4px solid ${status.color}`
-              }}>
-                <span style={{ fontSize: '36px', fontWeight: 900, color: status.color }}>{aqiValue}</span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>AQI</span>
+            <div>
+              <div className="aqi-circle" style={{ borderColor: status.color }}>
+                <span className="aqi-circle-value" style={{ color: status.color }}>{aqiValue}</span>
+                <span className="aqi-circle-label">AQI</span>
               </div>
             </div>
           </div>
 
           {/* Pollutant Breakdown */}
-          <div className="pollutant-breakdown" style={{ marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>Detailed Breakdown</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+          <div className="pollutant-breakdown">
+            <h3>Detailed Breakdown</h3>
+            <div className="pollutant-grid">
               {pollutants.map((p) => (
-                <div key={p.key} style={{ background: '#fff', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>{p.label}</span>
-                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>{p.unit}</span>
+                <div key={p.key} className="pollutant-card">
+                  <div className="pollutant-card-header">
+                    <span>{p.label}</span>
+                    <span>{p.unit}</span>
                   </div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--primary)' }}>
+                  <div className="pollutant-card-value">
                     {p.value !== null ? p.value : 'N/A'}
                   </div>
                 </div>
@@ -129,51 +111,68 @@ const StationDetails = () => {
             </div>
           </div>
 
-          {/* Trend Chart */}
-          <div className="trend-section" style={{ background: '#fff', padding: '24px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>Historical Trends (Recent)</h3>
-            <PollutantChart 
-              data={trends} 
-              pollutants={['pm25', 'pm10', 'no2', 'nh3', 'so2', 'co', 'o3']} 
-            />
+          {/* Trend Charts — Grouped by Relativity */}
+          <div className="station-trend-section">
+            <h3>Historical Trends (Recent)</h3>
+
+            {pollutants.map((p) => {
+              const chartKey = p.key === "ozone" ? "o3" : p.key;
+              const dotColor = {
+                pm25: "#0066ff",
+                pm10: "#10b981",
+                o3: "#f59e0b",
+                ozone: "#f59e0b",
+                no2: "#6366f1",
+                so2: "#8b5cf6",
+                co: "#64748b",
+                nh3: "#ec4899",
+              }[p.key] || "#0066ff";
+
+              return (
+                <div key={p.key} className="chart-group">
+                  <div className="chart-group-label">
+                    <span className="chart-group-dot" style={{ background: dotColor }}></span>
+                    <h4>{p.label}</h4>
+                    <span className="chart-group-unit">{p.unit}</span>
+                  </div>
+                  <PollutantChart data={trends} pollutants={[chartKey]} height={260} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="details-sidebar">
-          <div className="sidebar-card" style={{ background: '#fff', padding: '24px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Health Advice</h3>
-            <div style={{ padding: '16px', background: 'var(--accent-light)', borderRadius: 'var(--radius-md)', border: '1px solid var(--accent-border)' }}>
-              <p style={{ fontSize: '14px', color: 'var(--accent)', lineHeight: 1.6 }}>
+          <div className="sidebar-card sidebar-card-light">
+            <h3>Health Advice</h3>
+            <div className="health-advice-box">
+              <p>
                 {aqiValue <= 100 
                   ? "Air quality is considered satisfactory, and air pollution poses little or no risk."
                   : "Members of sensitive groups may experience health effects. The general public is less likely to be affected."}
               </p>
             </div>
-            <ul style={{ marginTop: '20px', paddingLeft: '20px', fontSize: '13px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <ul className="health-advice-list">
               <li>Outdoor activities are encouraged</li>
               <li>Ventilate your home frequently</li>
               <li>Minimal risk for sensitive groups</li>
             </ul>
           </div>
 
-          <div className="sidebar-card" style={{ background: '#0f172a', padding: '24px', borderRadius: 'var(--radius-lg)', color: '#fff' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Station Information</h3>
-            <div style={{ fontSize: '14px', opacity: 0.8, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <span style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>File Reference</span>
-                <span>{station.file_name}</span>
-              </div>
-              <div>
-                <span style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', opacity: 0.6, marginBottom: '4px' }}>Last Updated</span>
-                <span>{new Date(latest.date).toLocaleString()}</span>
-              </div>
-              <div style={{ marginTop: '8px' }}>
-                <Link to="/trends" className="primary-button" style={{ width: '100%', textAlign: 'center', background: 'var(--accent)', border: 'none' }}>
-                  Full Analysis
-                </Link>
-              </div>
+          <div className="sidebar-card sidebar-card-dark">
+            <h3>Station Information</h3>
+            <div className="station-info-field">
+              <span className="station-info-label">File Reference</span>
+              <span className="station-info-value">{station.file_name}</span>
             </div>
+            <div className="station-info-field">
+              <span className="station-info-label">Last Updated</span>
+              <span className="station-info-value">{new Date(latest.date).toLocaleString()}</span>
+            </div>
+            <Link to="/trends" className="sidebar-action-btn">
+              Full Analysis
+            </Link>
           </div>
         </div>
       </div>

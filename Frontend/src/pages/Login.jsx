@@ -21,6 +21,7 @@ export default function Login() {
     email: "",
     password: "",
     confirmPassword: "",
+    location: "",
     // Personalize toggle
     wantPersonalize: false,
     // Profile Fields
