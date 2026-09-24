@@ -1,4 +1,4 @@
-import { loginUser, registerUser, getUserProfile } from "../services/authService.js";
+import { loginUser, registerUser, getUserProfile, modifyUserProfile } from "../services/authService.js";
 
 export const login = async (req, res, next) => {
   try {
@@ -17,13 +17,49 @@ export const login = async (req, res, next) => {
 
 export const register = async (req, res, next) => {
   try {
-    const { firstName, lastName, username, email, password, location } = req.body;
+    const {
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      location,
+      age,
+      gender,
+      healthConditions,
+      smokingStatus,
+      activityLevel,
+      symptomSensitivity,
+      medicationTaken,
+      symptomsLogged,
+      symptomSeverity,
+      outdoorTimeHours,
+      notes,
+    } = req.body;
 
     if (!firstName || !lastName || !username || !email || !password || !location) {
-      return res.status(400).json({ error: "All fields are required" });
+      return res.status(400).json({ error: "Basic registration fields are required" });
     }
 
-    const result = await registerUser(firstName, lastName, username, email, password, location);
+    const result = await registerUser({
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      location,
+      age,
+      gender,
+      healthConditions,
+      smokingStatus,
+      activityLevel,
+      symptomSensitivity,
+      medicationTaken,
+      symptomsLogged,
+      symptomSeverity,
+      outdoorTimeHours,
+      notes,
+    });
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -39,3 +75,41 @@ export const getProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const {
+      firstName,
+      lastName,
+      email,
+      location,
+      age,
+      gender,
+      healthConditions,
+      smokingStatus,
+      activityLevel,
+      symptomSensitivity,
+      notes,
+    } = req.body;
+
+    const updatedUser = await modifyUserProfile(userId, {
+      firstName,
+      lastName,
+      email,
+      location,
+      age,
+      gender,
+      healthConditions,
+      smokingStatus,
+      activityLevel,
+      symptomSensitivity,
+      notes,
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -29,9 +29,9 @@ const palette = {
   nh3: "#ec4899",  // Pink
 };
 
-const PollutantChart = ({ data, pollutants }) => {
+const PollutantChart = ({ data, pollutants, height = 450 }) => {
   return (
-    <div className="chart-container-minimal" style={{ width: '100%', height: 450, padding: '24px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: '#fff' }}>
+    <div className="chart-container-minimal" style={{ width: '100%', height: height, padding: '24px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: '#fff' }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
@@ -57,6 +57,13 @@ const PollutantChart = ({ data, pollutants }) => {
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#666", fontSize: 12, fontWeight: 500 }} 
+            domain={[0, (dataMax) => {
+              if (!dataMax || dataMax === 0) return 10;
+              const margin = dataMax * 0.15;
+              const upper = dataMax + margin;
+              return upper < 10 ? Math.ceil(upper * 10) / 10 : Math.ceil(upper);
+            }]}
+            tickFormatter={(val) => (val % 1 !== 0 ? val.toFixed(1) : val)}
           />
           <Tooltip 
             contentStyle={{ 
@@ -66,6 +73,10 @@ const PollutantChart = ({ data, pollutants }) => {
               boxShadow: "0 4px 12px rgba(0,0,0,0.05)" 
             }}
             itemStyle={{ fontSize: 13, fontWeight: 600 }}
+            formatter={(value, name) => [
+              typeof value === 'number' ? (value % 1 !== 0 ? value.toFixed(2) : value) : value,
+              name
+            ]}
           />
           <Legend 
             verticalAlign="top" 

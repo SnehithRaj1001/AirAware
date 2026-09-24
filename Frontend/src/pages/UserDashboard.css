@@ -122,7 +122,148 @@
   text-decoration: underline;
 }
 
+/* AQI Level Badge */
+.aqi-level-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
 
+/* AQI Unit */
+.aqi-unit {
+  display: block;
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* AQI Footer */
+.aqi-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.aqi-footer small {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Trends Chart Section */
+.trends-chart-section {
+  margin-bottom: 48px;
+}
+
+.trends-chart-section h2 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 16px;
+}
+
+/* News List */
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* News Badge */
+.news-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  background: #f1f5f9;
+  color: var(--text-muted);
+}
+
+.news-warning .news-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.news-alert .news-badge,
+.news-danger .news-badge {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.news-info .news-badge {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.news-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.news-card p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.news-card small {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+/* Nearby Stations */
+.nearby-stations {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.station-preview h4 {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.station-aqi-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pm25-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.aqi-level {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: #f1f5f9;
+  color: var(--text-muted);
+}
+
+.no-data {
+  font-size: 13px;
+  color: var(--text-light);
+  font-style: italic;
+}
 
 
 @media (max-width: 1024px) {

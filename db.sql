@@ -97,5 +97,24 @@ CREATE TABLE users (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    location VARCHAR(100)
+    location VARCHAR(100),
+    age INTEGER,
+    gender VARCHAR(50),
+    health_conditions TEXT[],
+    smoking_status VARCHAR(50),
+    activity_level VARCHAR(50),
+    symptom_sensitivity VARCHAR(50),
+    notes TEXT
 );
+
+------------ CREATE 'user_symptom_logs' TABLE ------------
+CREATE TABLE IF NOT EXISTS user_symptom_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    medication_taken BOOLEAN DEFAULT FALSE,
+    symptoms_logged TEXT[],
+    symptom_severity VARCHAR(50),
+    outdoor_time_hours DECIMAL(4, 1),
+    notes TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

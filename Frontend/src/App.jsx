@@ -6,6 +6,7 @@ import MapView from "./pages/MapView.jsx";
 import UserDashboard from "./pages/UserDashboard.jsx";
 import StationDetails from "./pages/StationDetails.jsx";
 import Trends from "./pages/Trends.jsx";
+import Profile from "./pages/Profile.jsx";
 import Login from "./pages/Login.jsx";
 import "./App.css";
 
@@ -42,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Trends />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

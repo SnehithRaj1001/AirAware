@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { findUserByUsername, findUserById, createUser } from "../repositories/userRepository.js";
+import { findUserByUsername, findUserById, createUser, createSymptomLog, updateUserProfile, getUserSymptomLogs } from "../repositories/userRepository.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d";
@@ -43,11 +43,36 @@ export const loginUser = async (username, password) => {
       username: user.username,
       email: user.email,
       location: user.location,
+      age: user.age,
+      gender: user.gender,
+      healthConditions: user.health_conditions,
+      smokingStatus: user.smoking_status,
+      activityLevel: user.activity_level,
+      symptomSensitivity: user.symptom_sensitivity,
     },
   };
 };
 
-export const registerUser = async (firstName, lastName, username, email, password, location) => {
+export const registerUser = async ({
+  firstName,
+  lastName,
+  username,
+  email,
+  password,
+  location,
+  age,
+  gender,
+  healthConditions,
+  smokingStatus,
+  activityLevel,
+  symptomSensitivity,
+  // Initial symptom log fields
+  medicationTaken,
+  symptomsLogged,
+  symptomSeverity,
+  outdoorTimeHours,
+  notes,
+}) => {
   const existingUser = await findUserByUsername(username);
   
   if (existingUser) {
@@ -57,7 +82,43 @@ export const registerUser = async (firstName, lastName, username, email, passwor
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = await createUser(firstName, lastName, username, email, hashedPassword, location);
+  const newUser = await createUser({
+    firstName,
+    lastName,
+    username,
+    email,
+    password: hashedPassword,
+    location,
+    age,
+    gender,
+    healthConditions,
+    smokingStatus,
+    activityLevel,
+    symptomSensitivity,
+    notes,
+  });
+
+  // If any symptom log info was provided during registration, create initial symptom log
+  if (
+    medicationTaken !== undefined ||
+    (symptomsLogged && symptomsLogged.length > 0) ||
+    symptomSeverity ||
+    outdoorTimeHours !== undefined ||
+    notes
+  ) {
+    try {
+      await createSymptomLog({
+        userId: newUser.id,
+        medicationTaken: Boolean(medicationTaken),
+        symptomsLogged: symptomsLogged || [],
+        symptomSeverity: symptomSeverity || null,
+        outdoorTimeHours: outdoorTimeHours || null,
+        notes: notes || null,
+      });
+    } catch (logErr) {
+      console.error("Error creating initial symptom log:", logErr);
+    }
+  }
 
   const token = jwt.sign(
     {
@@ -78,6 +139,13 @@ export const registerUser = async (firstName, lastName, username, email, passwor
       username: newUser.username,
       email: newUser.email,
       location: newUser.location,
+      age: newUser.age,
+      gender: newUser.gender,
+      healthConditions: newUser.health_conditions,
+      smokingStatus: newUser.smoking_status,
+      activityLevel: newUser.activity_level,
+      symptomSensitivity: newUser.symptom_sensitivity,
+      notes: newUser.notes,
     },
   };
 };
@@ -91,5 +159,28 @@ export const getUserProfile = async (userId) => {
     throw error;
   }
 
-  return user;
+  const logs = await getUserSymptomLogs(userId, 5);
+
+  return {
+    ...user,
+    symptomLogs: logs,
+  };
 };
+
+export const modifyUserProfile = async (userId, profileData) => {
+  const updatedUser = await updateUserProfile(userId, profileData);
+  
+  if (!updatedUser) {
+    const error = new Error("User not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const logs = await getUserSymptomLogs(userId, 5);
+
+  return {
+    ...updatedUser,
+    symptomLogs: logs,
+  };
+};
+
