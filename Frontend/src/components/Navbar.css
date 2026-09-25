@@ -5,6 +5,41 @@
   top: 0;
   z-index: 1000;
   padding: 14px 0;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+[data-theme="dark"] .app-header {
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+}
+
+[data-theme="dark"] .app-nav {
+  background: #0f172a;
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all var(--transition-base);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.theme-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .header-content {

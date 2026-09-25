@@ -75,7 +75,9 @@ def get_forecast(station_id, model_path):
     exclude = [DATE_COL] + available_targets
     feature_cols = [c for c in df_feat_sample.columns if c not in exclude and "_Lag" not in c and "_MA" not in c and "Month" != c and "Day_of_Week" != c and "Is_Weekend" != c]
 
-    future_df = df.copy()
+    # Only the tail is required for lags (max lag 14) and rolling windows (max 14)
+    # Keeping only the recent 35 rows speeds up each day's feature generation significantly
+    future_df = df.tail(35).copy().reset_index(drop=True)
     last_date = df[DATE_COL].max()
     forecast_rows = []
 

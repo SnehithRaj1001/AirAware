@@ -107,23 +107,27 @@ const Trends = () => {
 
           for (const line of lines) {
             if (line.startsWith('data: ')) {
-              const data = JSON.parse(line.replace('data: ', ''))
-              
-              if (data.status === 'training') {
-                setIsTraining(true)
-                setProgress(data.progress)
-                setTrainingMessage(data.currentTask || data.message)
-              } else if (data.status === 'loading' || data.status === 'forecasting') {
-                setProgress(data.progress)
-                setTrainingMessage(data.message)
-              } else if (data.status === 'done') {
-                setForecast(data.forecast)
-                setIsTraining(false)
-                setLoading(false)
-              } else if (data.status === 'error') {
-                setError(data.message)
-                setIsTraining(false)
-                setLoading(false)
+              try {
+                const data = JSON.parse(line.replace('data: ', ''))
+                
+                if (data.status === 'training') {
+                  setIsTraining(true)
+                  setProgress(data.progress)
+                  setTrainingMessage(data.currentTask || data.message)
+                } else if (data.status === 'loading' || data.status === 'forecasting') {
+                  setProgress(data.progress)
+                  setTrainingMessage(data.message)
+                } else if (data.status === 'done') {
+                  setForecast(data.forecast)
+                  setIsTraining(false)
+                  setLoading(false)
+                } else if (data.status === 'error') {
+                  setError(data.message)
+                  setIsTraining(false)
+                  setLoading(false)
+                }
+              } catch (parseErr) {
+                console.warn('Failed to parse SSE line:', parseErr)
               }
             }
           }
@@ -239,29 +243,63 @@ const Trends = () => {
               </thead>
               <tbody>
                 {filteredForecast.map((row, idx) => {
-                  const pollutantKeys = ['pm25', 'pm10', 'no2', 'nh3', 'so2', 'co', 'ozone'];
-                  const dayAqi = Math.round(Math.max(...pollutantKeys.map(k => Number(row[k]) || 0))) || 0;
+                  const pollutantList = [
+                    { key: 'pm25', label: 'PM2.5' },
+                    { key: 'pm10', label: 'PM10' },
+                    { key: 'no2', label: 'NO2' },
+                    { key: 'nh3', label: 'NH3' },
+                    { key: 'so2', label: 'SO2' },
+                    { key: 'co', label: 'CO' },
+                    { key: 'ozone', label: 'Ozone' }
+                  ];
+
+                  let maxVal = -1;
+                  let prominentKey = 'pm25';
+
+                  pollutantList.forEach(({ key }) => {
+                    const val = Number(row[key]) || 0;
+                    if (val > maxVal) {
+                      maxVal = val;
+                      prominentKey = key;
+                    }
+                  });
+
+                  const dayAqi = Math.round(maxVal > 0 ? maxVal : 0);
+                  const aqiColor = dayAqi > 200 ? '#7f1d1d' : dayAqi > 100 ? '#ef4444' : dayAqi > 50 ? '#f59e0b' : '#10b981';
                   
                   return (
                     <tr key={idx}>
                       <td>{row.date}</td>
-                      <td>
-                        <span className={`pollutant-badge ${row.pm25 > 100 ? 'pollutant-badge-bad' : 'pollutant-badge-good'}`}>
-                          {row.pm25}
-                        </span>
-                      </td>
-                      <td>{row.pm10}</td>
-                      <td>{row.no2}</td>
-                      <td>{row.nh3}</td>
-                      <td>{row.so2}</td>
-                      <td>{row.co}</td>
-                      <td>{row.ozone}</td>
+                      {pollutantList.map(({ key }) => {
+                        const isProminent = key === prominentKey;
+                        const val = row[key];
+                        return (
+                          <td key={key}>
+                            {isProminent ? (
+                              <span
+                                className="pollutant-badge prominent-badge"
+                                style={{
+                                  borderColor: aqiColor,
+                                  color: aqiColor,
+                                  background: `${aqiColor}18`,
+                                  boxShadow: `0 0 10px ${aqiColor}20`
+                                }}
+                                title="Prominent Pollutant (Determines AQI)"
+                              >
+                                {val}
+                              </span>
+                            ) : (
+                              <span>{val}</span>
+                            )}
+                          </td>
+                        );
+                      })}
                       <td>
                         <span 
                           className="aqi-badge-cell"
-                          style={{ background: dayAqi > 100 ? '#ef4444' : '#22c55e' }}
+                          style={{ background: aqiColor }}
                         >
-                          {Math.round(dayAqi)}
+                          {dayAqi}
                         </span>
                       </td>
                     </tr>

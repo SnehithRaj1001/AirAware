@@ -24,7 +24,7 @@
 
 .aqi-card-main {
   padding: 40px;
-  background: #fff;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   margin-bottom: 48px;
@@ -47,15 +47,15 @@
 
 .aqi-item {
   padding: 24px;
-  background: #fcfcfd;
-  border: 1px solid #f1f5f9;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   text-align: left;
   transition: all var(--transition-base);
 }
 
 .aqi-item:hover {
-  background: #fff;
+  background: var(--bg-card);
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
@@ -94,7 +94,7 @@
 .news-card,
 .station-preview {
   padding: 24px;
-  background: #fff;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   margin-bottom: 16px;
@@ -184,7 +184,7 @@
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   margin-bottom: 8px;
-  background: #f1f5f9;
+  background: var(--bg-main);
   color: var(--text-muted);
 }
 
@@ -255,7 +255,7 @@
   font-weight: 700;
   padding: 3px 10px;
   border-radius: var(--radius-full);
-  background: #f1f5f9;
+  background: var(--bg-main);
   color: var(--text-muted);
 }
 

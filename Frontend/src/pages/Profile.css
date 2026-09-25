@@ -1,6 +1,6 @@
 .profile-page-shell {
   min-height: calc(100vh - 72px);
-  background: #f8fafc;
+  background: var(--bg-main);
   padding: 40px 24px 80px;
 }
 
@@ -19,26 +19,26 @@
   justify-content: center;
   min-height: 300px;
   gap: 16px;
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .profile-hero-card {
-  background: #ffffff;
-  border: 1px solid var(--border, #e2e8f0);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 32px;
   display: flex;
   align-items: center;
   gap: 24px;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-avatar-badge {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0066ff, #00c6ff);
+  background: linear-gradient(135deg, var(--accent), #00c6ff);
   color: #ffffff;
   font-family: var(--font-heading);
   font-size: 28px;
@@ -52,13 +52,13 @@
 
 .profile-hero-details h2 {
   font-size: 24px;
-  color: var(--primary, #0f172a);
+  color: var(--primary);
   margin-bottom: 2px;
 }
 
 .profile-username {
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 500;
   display: block;
   margin-bottom: 12px;
@@ -78,15 +78,15 @@
 }
 
 .location-pill {
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border);
 }
 
 .sensitivity-pill {
-  background: #eff6ff;
-  color: #0066ff;
-  border: 1px solid #bfdbfe;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
 .success-banner {
@@ -109,33 +109,33 @@
 }
 
 .profile-section-card {
-  background: #ffffff;
-  border: 1px solid var(--border, #e2e8f0);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 32px;
-  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-title-wrap {
   margin-bottom: 24px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-title-wrap h3 {
   font-size: 18px;
-  color: #0f172a;
+  color: var(--primary);
   margin-bottom: 4px;
 }
 
 .section-title-wrap p {
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .input-disabled {
-  background: #f8fafc !important;
-  color: #94a3b8 !important;
+  background: var(--bg-main) !important;
+  color: var(--text-light) !important;
   cursor: not-allowed;
 }
 
@@ -175,8 +175,8 @@
 }
 
 .log-history-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px 20px;
 }
@@ -187,20 +187,20 @@
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border);
 }
 
 .log-date {
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .medication-badge {
   font-size: 12px;
   font-weight: 600;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: var(--accent-soft);
+  color: var(--accent);
   padding: 3px 10px;
   border-radius: 20px;
 }
@@ -221,7 +221,7 @@
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--text-light);
   letter-spacing: 0.04em;
 }
 
@@ -264,10 +264,10 @@
 .profile-form textarea {
   width: 100%;
   padding: 10px 14px;
-  background: var(--bg-tertiary, #f8fafc);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 8px;
-  color: var(--text-primary, #1e293b);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
   font-size: 0.95rem;
   font-family: inherit;
   resize: vertical;
@@ -277,22 +277,22 @@
 
 .profile-form textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .log-notes-snippet {
   margin-top: 10px;
   padding: 8px 12px;
-  background: var(--bg-tertiary, #f8fafc);
-  border-left: 3px solid #3b82f6;
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent);
   border-radius: 4px;
 }
 
 .log-notes-snippet .log-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-secondary, #64748b);
+  color: var(--text-light);
   display: block;
   margin-bottom: 3px;
 }
@@ -300,7 +300,7 @@
 .log-notes-snippet p {
   margin: 0;
   font-size: 0.88rem;
-  color: var(--text-primary, #334155);
+  color: var(--text-main);
   white-space: pre-wrap;
 }
 

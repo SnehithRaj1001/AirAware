@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -109,9 +110,9 @@ const MapView = () => {
                                                 <strong>{station.latestAqi?.pm10 || 'N/A'}</strong>
                                             </div>
                                         </div>
-                                        <a href={`/station/${station.id}`} className="view-details-link">
+                                        <Link to={`/station/${station.id}`} className="view-details-link">
                                             View Full Analysis →
-                                        </a>
+                                        </Link>
                                     </div>
                                 </Popup>
                             </Marker>
