@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/PublicDashboard.jsx";
 import MapView from "./pages/MapView.jsx";
+import RtaqiDashboard from "./pages/RtaqiDashboard.jsx";
 import UserDashboard from "./pages/UserDashboard.jsx";
 import StationDetails from "./pages/StationDetails.jsx";
 import Trends from "./pages/Trends.jsx";
@@ -19,6 +20,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/rtaqi" element={<RtaqiDashboard />} />
           <Route path="/login" element={<Login />} />
 
           {/* Protected Routes (Require Login) */}

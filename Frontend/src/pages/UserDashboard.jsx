@@ -190,9 +190,10 @@ const UserDashboard = () => {
                 <YAxis />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #ccc",
+                    backgroundColor: "var(--bg-card)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
+                    color: "var(--text-main)",
                   }}
                   labelFormatter={(date) =>
                     new Date(date).toLocaleDateString("en-US", {

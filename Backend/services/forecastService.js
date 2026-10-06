@@ -60,12 +60,15 @@ export class ForecastService {
         };
 
         try {
+            console.log(`[ForecastStream] Checking model at: ${modelPath}`);
             if (!fs.existsSync(modelPath)) {
+                console.log(`[ForecastStream] Model not found. Starting training for station ${stationId}...`);
                 sendEvent({ status: 'training', progress: 0, message: 'Initial training started...' });
                 await this.trainModel(stationId, (progressData) => {
                     sendEvent(progressData);
                 });
             } else {
+                console.log(`[ForecastStream] Found existing model for station ${stationId}. Loading directly.`);
                 sendEvent({ status: 'loading', progress: 50, message: 'Loading existing model...' });
             }
 

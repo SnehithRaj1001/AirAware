@@ -67,6 +67,14 @@ export const publicAPI = {
   getStation: (stationId) => apiClient.get(`/api/map/stations/${stationId}`),
 };
 
+// Real-Time AQI (IoT Raspi sensor) APIs
+export const rtaqiAPI = {
+  getLatest: (deviceId) =>
+    apiClient.get("/api/rtaqi/latest", { params: deviceId ? { deviceId } : {} }),
+  getHistory: (deviceId, limit = 60) =>
+    apiClient.get("/api/rtaqi/history", { params: { ...(deviceId ? { deviceId } : {}), limit } }),
+};
+
 // Legacy endpoints (kept for compatibility)
 export const fetchStations = async () => {
   return (await apiClient.get("/stations")).data;

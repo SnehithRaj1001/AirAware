@@ -43,10 +43,10 @@ const StationDetails = () => {
   const aqiValue = Math.round(latest.aqi) || 0;
 
   const getStatus = (val) => {
-    if (val <= 50) return { label: "Good", color: "#22c55e", bg: "#f0fdf4" };
-    if (val <= 100) return { label: "Satisfactory", color: "#f59e0b", bg: "#fffbeb" };
-    if (val <= 200) return { label: "Moderate", color: "#ef4444", bg: "#fef2f2" };
-    return { label: "Poor", color: "#7f1d1d", bg: "#fee2e2" };
+    if (val <= 50) return { label: "Good", color: "#10b981", bg: "rgba(16, 185, 129, 0.12)" };
+    if (val <= 100) return { label: "Satisfactory", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.12)" };
+    if (val <= 200) return { label: "Moderate", color: "#ef4444", bg: "rgba(239, 68, 68, 0.12)" };
+    return { label: "Poor", color: "#dc2626", bg: "rgba(220, 38, 38, 0.15)" };
   };
 
   const status = getStatus(aqiValue);

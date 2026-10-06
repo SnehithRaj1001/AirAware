@@ -1,0 +1,401 @@
+.rtaqi-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  animation: fade-up 0.4s ease-out;
+}
+
+.rtaqi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.rtaqi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 102, 255, 0.15);
+}
+
+.live-dot-pulse {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+.rtaqi-header h1 {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+}
+
+.rtaqi-subtitle {
+  color: var(--text-muted);
+  font-size: 15px;
+  max-width: 650px;
+  margin: 0;
+}
+
+.rtaqi-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.device-info-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+}
+
+.refresh-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.refresh-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.refresh-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.last-sync {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.rtaqi-alert {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.rtaqi-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.rtaqi-hero-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-top-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.aqi-display {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.aqi-big-number {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 1;
+  font-family: var(--font-heading);
+}
+
+.aqi-status-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aqi-category-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid;
+  align-self: flex-start;
+}
+
+.aqi-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 260px;
+}
+
+.reading-time {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-light);
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.telemetry-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.telemetry-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-main);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.sensor-name {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.status-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.status-ok {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.status-warn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.gps-location-bar {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--bg-main);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rtaqi-section-title {
+  margin: 28px 0 16px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.gas-metrics-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.metric-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.metric-type, .sensor-tag {
+  font-size: 10px;
+  color: var(--text-light);
+  background: var(--bg-main);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.metric-main-val {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.metric-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.metric-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-main);
+  border-radius: var(--radius-full);
+  margin: 12px 0 8px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.metric-footer {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.telemetry-subdata {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.telemetry-subdata strong {
+  color: var(--text-main);
+}
+
+.rtaqi-charts-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.rtaqi-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chart-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.chart-tag {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.chart-wrapper {
+  min-height: 260px;
+}
+
+.chart-placeholder {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .rtaqi-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .rtaqi-charts-section {
+    grid-template-columns: 1fr;
+  }
+}

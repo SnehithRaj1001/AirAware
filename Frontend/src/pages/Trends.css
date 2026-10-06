@@ -1,12 +1,13 @@
 /* Trends Page Styles */
-
+ 
 /* Tab Controls */
 .tab-controls {
   display: flex;
   gap: 8px;
-  background: #f1f5f9;
+  background: var(--bg-main);
   padding: 4px;
   border-radius: 8px;
+  border: 1px solid var(--border);
 }
 
 .tab-btn {
@@ -22,8 +23,8 @@
 }
 
 .tab-btn.tab-active {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
   color: var(--accent);
 }
 
@@ -33,10 +34,10 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 24px;
-  background: #fff;
+  background: var(--bg-card);
   padding: 12px 20px;
   border-radius: var(--radius-md);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
 }
 
 .duration-label {
@@ -48,8 +49,8 @@
 .duration-btn {
   padding: 6px 14px;
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
   color: var(--text-muted);
   cursor: pointer;
   font-size: 12px;
@@ -64,27 +65,29 @@
 
 .duration-btn.duration-active {
   border-color: var(--accent);
-  background: rgba(0, 102, 255, 0.05);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 
 /* Training Panel */
 .training-panel {
-  background: #fff;
+  background: var(--bg-card);
   padding: 40px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   margin-bottom: 24px;
   text-align: center;
+  border: 1px solid var(--border);
 }
 
 /* Forecast Table */
 .forecast-table-panel {
   margin-bottom: 24px;
-  background: #fff;
+  background: var(--bg-card);
   padding: 24px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
 }
 
 .forecast-table-panel h3 {
@@ -108,7 +111,7 @@
 .forecast-table thead {
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--bg-card);
   z-index: 1;
 }
 
@@ -118,7 +121,7 @@
   font-size: 11px;
   text-transform: uppercase;
   font-weight: 700;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid var(--border);
 }
 
 .forecast-table th:last-child {
@@ -129,7 +132,7 @@
 .forecast-table td {
   padding: 16px 8px;
   font-weight: 500;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
 }
 
 .forecast-table td:first-child {
@@ -140,8 +143,15 @@
 .pollutant-badge {
   display: inline-block;
   padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.prominent-badge {
+  border: 1px solid;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  transition: all var(--transition-base);
 }
 
 .pollutant-badge-good {
@@ -167,7 +177,8 @@
 .chart-loading-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--bg-card);
+  opacity: 0.8;
   z-index: 10;
   display: flex;
   justify-content: center;
@@ -209,9 +220,10 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
-  background: #f1f5f9;
+  background: var(--bg-main);
   padding: 2px 8px;
   border-radius: 4px;
+  border: 1px solid var(--border);
   margin-left: auto;
 }
 

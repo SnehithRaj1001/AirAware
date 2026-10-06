@@ -22,7 +22,7 @@ const ProgressBar = ({ progress, status, message }) => {
       <div className="progress-bar-bg" style={{
         width: '100%',
         height: '10px',
-        background: '#e2e8f0',
+        background: 'var(--border)',
         borderRadius: '5px',
         overflow: 'hidden'
       }}>
