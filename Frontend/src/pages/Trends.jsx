@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { fetchStations, fetchAqiTrends } from '../api.js'
 import PollutantChart from '../components/PollutantChart.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
+import { Skeleton } from '../components/Skeleton.jsx'
 import './Trends.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
@@ -17,7 +19,11 @@ const POLLUTANTS = [
 ];
 
 const Trends = () => {
+  const [searchParams] = useSearchParams()
+  const initialStationId = searchParams.get('stationId')
+
   const [stations, setStations] = useState([])
+  const [selectedCity, setSelectedCity] = useState('')
   const [selectedStation, setSelectedStation] = useState(null)
   const [trends, setTrends] = useState([])
   const [forecast, setForecast] = useState([])
@@ -31,13 +37,34 @@ const Trends = () => {
   const [progress, setProgress] = useState(0)
   const [trainingMessage, setTrainingMessage] = useState('')
 
+  // Helper to extract city from station metadata or name
+  const extractCity = (station) => {
+    if (station.city && station.city.trim()) return station.city.trim();
+    // Fallback: parse from station_name format e.g. "Alandi, Pune - IITM" or "Connaught Place, Delhi"
+    const parts = (station.station_name || '').split(',');
+    if (parts.length > 1) {
+      const secondPart = parts[1].trim().split('-')[0].trim();
+      if (secondPart) return secondPart;
+    }
+    return 'Other';
+  };
+
   useEffect(() => {
     const loadStations = async () => {
       try {
         const payload = await fetchStations()
-        setStations(payload.stations)
-        if (payload.stations.length > 0) {
-          setSelectedStation(payload.stations[0].station_id)
+        const rawStations = payload.stations || []
+        setStations(rawStations)
+
+        if (rawStations.length > 0) {
+          // If stationId was passed in query params, find and select it
+          const targetStation = initialStationId
+            ? rawStations.find((s) => String(s.station_id) === String(initialStationId))
+            : null;
+
+          const active = targetStation || rawStations[0];
+          setSelectedCity(extractCity(active));
+          setSelectedStation(active.station_id);
         }
       } catch (err) {
         setError(err.message)
@@ -45,6 +72,32 @@ const Trends = () => {
     }
     loadStations()
   }, [])
+
+  // Unique sorted list of cities
+  const cities = useMemo(() => {
+    const citySet = new Set();
+    stations.forEach((s) => {
+      citySet.add(extractCity(s));
+    });
+    return Array.from(citySet).sort();
+  }, [stations]);
+
+  // Stations belonging to selectedCity (or all if 'All Cities')
+  const filteredStations = useMemo(() => {
+    if (!selectedCity || selectedCity === 'ALL') return stations;
+    return stations.filter((s) => extractCity(s) === selectedCity);
+  }, [stations, selectedCity]);
+
+  // Handle city dropdown change
+  const handleCityChange = (newCity) => {
+    setSelectedCity(newCity);
+    const available = newCity === 'ALL'
+      ? stations
+      : stations.filter((s) => extractCity(s) === newCity);
+    if (available.length > 0) {
+      setSelectedStation(available[0].station_id);
+    }
+  };
 
   useEffect(() => {
     if (!selectedStation) return
@@ -168,20 +221,38 @@ const Trends = () => {
         </div>
       </div>
 
-      <div className="controls-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div className="control-block">
-          <label htmlFor="station-select">Choose station</label>
-          <select
-            id="station-select"
-            value={selectedStation ?? ''}
-            onChange={(e) => setSelectedStation(e.target.value)}
-          >
-            {stations.map((station) => (
-              <option key={station.station_id} value={station.station_id}>
-                {station.station_name}
-              </option>
-            ))}
-          </select>
+      <div className="controls-row trends-controls-row">
+        <div className="filters-group">
+          <div className="control-block">
+            <label htmlFor="city-select">City</label>
+            <select
+              id="city-select"
+              value={selectedCity}
+              onChange={(e) => handleCityChange(e.target.value)}
+            >
+              <option value="ALL">All Cities ({stations.length} stations)</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="control-block">
+            <label htmlFor="station-select">Station</label>
+            <select
+              id="station-select"
+              value={selectedStation ?? ''}
+              onChange={(e) => setSelectedStation(e.target.value)}
+            >
+              {filteredStations.map((station) => (
+                <option key={station.station_id} value={station.station_id}>
+                  {station.station_name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="tab-controls">
@@ -314,7 +385,14 @@ const Trends = () => {
       <section className="chart-panel" style={{ position: 'relative', minHeight: '400px' }}>
         {loading && !isTraining && (
           <div className="chart-loading-overlay">
-             <div className="spinner"></div>
+            <div style={{ width: '100%', padding: '24px' }}>
+              <Skeleton width="40%" height="28px" style={{ marginBottom: '12px' }} />
+              <Skeleton width="70%" height="18px" style={{ marginBottom: '32px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+                <Skeleton height="260px" borderRadius="12px" />
+                <Skeleton height="260px" borderRadius="12px" />
+              </div>
+            </div>
           </div>
         )}
         <div className="panel-heading">

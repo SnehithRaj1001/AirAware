@@ -63,6 +63,7 @@ export const userAPI = {
 // Public APIs
 export const publicAPI = {
   getNews: () => apiClient.get("/api/news"),
+  getMapConfig: () => apiClient.get("/api/map/config"),
   getAllStations: () => apiClient.get("/api/map/stations"),
   getStation: (stationId) => apiClient.get(`/api/map/stations/${stationId}`),
 };

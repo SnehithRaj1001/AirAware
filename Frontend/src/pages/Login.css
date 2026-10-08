@@ -277,8 +277,8 @@
 }
 
 .per-symptom-severity-box {
-  background: rgba(248, 250, 252, 0.9);
-  border: 1px solid #e2e8f0;
+  background: var(--bg-main, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
   border-radius: 12px;
   padding: 14px 16px;
   margin: 12px 0 20px;
@@ -287,7 +287,7 @@
 .section-sublabel {
   font-size: 12px;
   font-weight: 700;
-  color: #475569;
+  color: var(--text-light, #64748b);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   display: block;
@@ -305,8 +305,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: #ffffff;
-  border: 1px solid #edf2f7;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #edf2f7);
   border-radius: 8px;
   gap: 12px;
 }
@@ -314,7 +314,7 @@
 .symptom-row-name {
   font-size: 14px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-main, #1e293b);
 }
 
 .severity-pill-group {
@@ -327,15 +327,16 @@
   border-radius: 14px;
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #64748b;
+  border: 1px solid var(--border, #cbd5e1);
+  background: var(--bg-main, #f8fafc);
+  color: var(--text-muted, #64748b);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .severity-pill:hover {
-  background: #e2e8f0;
+  background: var(--border, #e2e8f0);
+  color: var(--text-main);
 }
 
 .severity-pill.severity-mild-active {
@@ -359,13 +360,44 @@
   box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 }
 
+/* Dark theme overrides */
+[data-theme="dark"] .per-symptom-severity-box {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .section-sublabel {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .symptom-severity-row {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .symptom-row-name {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .severity-pill {
+  background: var(--bg-page);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .severity-pill:hover {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  color: var(--text-main);
+}
+
 .checkbox-label {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-main, #334155);
   cursor: pointer;
   user-select: none;
 }

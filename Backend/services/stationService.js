@@ -24,6 +24,7 @@ export const getStationsWithLatestAqi = async () => {
   return stations.map((row) => ({
     station_id: row.station_id,
     station_name: row.station_name,
+    city: row.city || null,
     file_name: row.file_name,
     latitude: row.latitude == null ? null : Number(row.latitude),
     longitude: row.longitude == null ? null : Number(row.longitude),

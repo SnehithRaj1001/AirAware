@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchLatestAqi, fetchAqiTrends } from "../api.js";
 import PollutantChart from "../components/PollutantChart.jsx";
+import { StationDetailsSkeleton } from "../components/Skeleton.jsx";
 import "./StationDetails.css";
 
 const StationDetails = () => {
@@ -35,7 +36,7 @@ const StationDetails = () => {
     loadStationData();
   }, [id]);
 
-  if (loading) return <div className="page-shell"><div className="loading-container"><div className="spinner"></div></div></div>;
+  if (loading) return <StationDetailsSkeleton />;
   if (error) return <div className="page-shell"><div className="error-box">{error}</div></div>;
   if (!data) return <div className="page-shell">No data found</div>;
 
@@ -170,7 +171,7 @@ const StationDetails = () => {
               <span className="station-info-label">Last Updated</span>
               <span className="station-info-value">{new Date(latest.date).toLocaleString()}</span>
             </div>
-            <Link to="/trends" className="sidebar-action-btn">
+            <Link to={`/trends?stationId=${id}`} className="sidebar-action-btn">
               Full Analysis
             </Link>
           </div>

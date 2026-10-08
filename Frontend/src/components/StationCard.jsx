@@ -21,7 +21,16 @@ const StationCard = ({ station }) => {
   return (
     <article className={`station-card ${cardClass}`}>
       <div className="station-card__header">
-        <h3>{stationName}</h3>
+        <div className="station-card__title-row">
+          <h3>{stationName}</h3>
+          {station.distanceKm != null && (
+            <span className="station-card__dist-chip">
+              {station.distanceKm < 1
+                ? `${Math.round(station.distanceKm * 1000)} m away`
+                : `${station.distanceKm.toFixed(1)} km away`}
+            </span>
+          )}
+        </div>
         <span>
           {latestAqi.date ? new Date(latestAqi.date).toLocaleString() : "No data"}
         </span>

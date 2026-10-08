@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { publicAPI } from "../api.js";
 import StationCard from "../components/StationCard.jsx";
+import { DashboardSkeleton } from "../components/Skeleton.jsx";
 import "./Dashboard.css";
 
 const STATIONS_PER_PAGE = 20;
@@ -9,10 +10,48 @@ const STATIONS_PER_PAGE = 20;
 const Dashboard = () => {
   const [stations, setStations] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [sortOption, setSortOption] = useState("name");
+  const [sortOption, setSortOption] = useState("distance");
+  const [maxDistance, setMaxDistance] = useState("all");
+  const [userCoords, setUserCoords] = useState(null);
+  const [geoStatus, setGeoStatus] = useState("prompt"); // 'prompt' | 'granted' | 'denied'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Haversine distance in km
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+          setGeoStatus("granted");
+        },
+        () => {
+          setGeoStatus("denied");
+          setSortOption("name");
+        },
+        { timeout: 8000 }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const loadStations = async () => {
@@ -33,26 +72,53 @@ const Dashboard = () => {
 
   const filteredStations = useMemo(() => {
     const normalized = searchText.trim().toLowerCase();
-    let list = stations;
+
+    // Map stations with computed distance
+    let list = stations.map((station) => {
+      const dist =
+        userCoords && station.latitude != null && station.longitude != null
+          ? calculateDistance(
+              userCoords.latitude,
+              userCoords.longitude,
+              station.latitude,
+              station.longitude
+            )
+          : null;
+      return { ...station, distanceKm: dist };
+    });
 
     if (normalized) {
       list = list.filter((item) =>
-        item.stationName.toLowerCase().includes(normalized),
+        item.stationName.toLowerCase().includes(normalized) ||
+        (item.address && item.address.toLowerCase().includes(normalized))
       );
     }
 
-    if (sortOption === "pm25") {
+    // Distance range filter
+    if (maxDistance !== "all" && userCoords) {
+      const maxKm = Number(maxDistance);
+      list = list.filter((item) => item.distanceKm != null && item.distanceKm <= maxKm);
+    }
+
+    if (sortOption === "distance") {
+      list = [...list].sort((a, b) => {
+        if (a.distanceKm == null && b.distanceKm == null) return 0;
+        if (a.distanceKm == null) return 1;
+        if (b.distanceKm == null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+    } else if (sortOption === "pm25") {
       list = [...list].sort(
-        (a, b) => (b.latestAqi?.pm25 ?? 0) - (a.latestAqi?.pm25 ?? 0),
+        (a, b) => (b.latestAqi?.pm25 ?? 0) - (a.latestAqi?.pm25 ?? 0)
       );
     } else {
       list = [...list].sort((a, b) =>
-        a.stationName.localeCompare(b.stationName),
+        a.stationName.localeCompare(b.stationName)
       );
     }
 
     return list;
-  }, [stations, searchText, sortOption]);
+  }, [stations, searchText, sortOption, maxDistance, userCoords]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredStations.length / STATIONS_PER_PAGE);
@@ -66,14 +132,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return (
-      <main className="page-shell">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading stations...</p>
-        </div>
-      </main>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -81,9 +140,14 @@ const Dashboard = () => {
       <section className="hero-panel">
         <div>
           <h1>AirAware Dashboard</h1>
-          <p>
-            Monitor real-time air quality and pollution trends across stations.
-          </p>
+          <div className="hero-subtitle-row">
+            <p>Monitor real-time air quality and pollution trends across stations.</p>
+            {userCoords && (
+              <span className="location-pill live-gps-pill">
+                📍 GPS Distance Active
+              </span>
+            )}
+          </div>
         </div>
       </section>
 
@@ -97,7 +161,7 @@ const Dashboard = () => {
               setSearchText(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder="Filter by name"
+            placeholder="Search by station or city"
           />
         </div>
 
@@ -111,13 +175,35 @@ const Dashboard = () => {
               setCurrentPage(1);
             }}
           >
-            <option value="name">Name</option>
-            <option value="pm25">PM2.5</option>
+            {userCoords && <option value="distance">📍 Distance (Nearest First)</option>}
+            <option value="name">Name (A-Z)</option>
+            <option value="pm25">Highest PM2.5</option>
           </select>
         </div>
 
-        <Link to="/trends" className="secondary-button">
-          View trends
+        {userCoords && (
+          <div className="control-block">
+            <label htmlFor="dist-filter">Within Distance</label>
+            <select
+              id="dist-filter"
+              value={maxDistance}
+              onChange={(e) => {
+                setMaxDistance(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="all">All Distances</option>
+              <option value="10">Within 10 km</option>
+              <option value="25">Within 25 km</option>
+              <option value="50">Within 50 km</option>
+              <option value="100">Within 100 km</option>
+              <option value="200">Within 200 km</option>
+            </select>
+          </div>
+        )}
+
+        <Link to="/map" className="secondary-button" style={{ alignSelf: 'flex-end', height: '44px', display: 'inline-flex', alignItems: 'center' }}>
+          Interactive Map
         </Link>
       </section>
 

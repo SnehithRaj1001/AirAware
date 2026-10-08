@@ -15,7 +15,22 @@
   color: var(--text-muted);
   max-width: 700px;
   line-height: 1.6;
+  margin: 0;
 }
+
+.hero-subtitle-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.location-pill {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
 
 .controls-row {
   display: flex;

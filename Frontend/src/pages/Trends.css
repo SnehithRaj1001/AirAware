@@ -1,4 +1,25 @@
 /* Trends Page Styles */
+.trends-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.filters-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1;
+  max-width: 650px;
+  flex-wrap: wrap;
+}
+
+.filters-group .control-block {
+  flex: 1;
+  min-width: 200px;
+}
  
 /* Tab Controls */
 .tab-controls {
@@ -8,6 +29,7 @@
   padding: 4px;
   border-radius: 8px;
   border: 1px solid var(--border);
+  align-self: flex-end;
 }
 
 .tab-btn {
@@ -178,12 +200,13 @@
   position: absolute;
   inset: 0;
   background: var(--bg-card);
-  opacity: 0.8;
+  opacity: 0.95;
   z-index: 10;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 /* Grouped Charts */
