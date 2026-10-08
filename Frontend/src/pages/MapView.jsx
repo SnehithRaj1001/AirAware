@@ -6,7 +6,9 @@ import L from 'leaflet';
 import 'leaflet.heat';
 import { publicAPI } from '../api.js';
 import { MapSkeleton } from '../components/Skeleton.jsx';
+import { getIndianAqiBand } from '../utils/aqiStandards.js';
 import './MapView.css';
+
 
 // Fix for default marker icons in Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -28,22 +30,23 @@ const HeatmapLayer = ({ points }) => {
     useEffect(() => {
         if (!map || !points || points.length === 0 || !L.heatLayer) return;
 
-        // Leaflet HeatLayer config with smooth blending transitions
+        // Leaflet HeatLayer config with smooth blending transitions (Indian NAQI scales)
         const heat = L.heatLayer(points, {
             radius: 45,
             blur: 35,
             maxZoom: 14,
-            max: 350,
+            max: 450,
             minOpacity: 0.25,
             gradient: {
-                0.15: '#10b981', // Good (Green)
-                0.30: '#84cc16', // Satisfactory (Lime)
-                0.50: '#f59e0b', // Moderate (Amber)
-                0.70: '#f97316', // Poor (Orange)
-                0.85: '#ef4444', // Very Poor (Red)
-                1.00: '#7f1d1d'  // Severe (Dark Red)
+                0.11: '#10b981', // 0-50 Good (Green)
+                0.22: '#84cc16', // 51-100 Satisfactory (Lime)
+                0.44: '#f59e0b', // 101-200 Moderate (Amber)
+                0.66: '#f97316', // 201-300 Poor (Orange)
+                0.88: '#ef4444', // 301-400 Very Poor (Red)
+                1.00: '#7f1d1d'  // 401+ Severe (Dark Red)
             }
         }).addTo(map);
+
 
         return () => {
             map.removeLayer(heat);
@@ -77,14 +80,9 @@ const MapView = () => {
     }, []);
 
     const getAqiStatus = (aqi) => {
-        if (!aqi) return { label: 'Unknown', color: '#94a3b8' };
-        if (aqi <= 50) return { label: 'Good', color: '#10b981' };
-        if (aqi <= 100) return { label: 'Satisfactory', color: '#84cc16' };
-        if (aqi <= 200) return { label: 'Moderate', color: '#f59e0b' };
-        if (aqi <= 300) return { label: 'Poor', color: '#f97316' };
-        if (aqi <= 400) return { label: 'Very Poor', color: '#ef4444' };
-        return { label: 'Severe', color: '#991b1b' };
+        return getIndianAqiBand(aqi);
     };
+
 
     const heatmapPoints = stations
         .map((station) => {
@@ -204,8 +202,9 @@ const MapView = () => {
                             <span className="legend-chip" style={{ background: '#f59e0b' }}>101-200 Moderate</span>
                             <span className="legend-chip" style={{ background: '#f97316' }}>201-300 Poor</span>
                             <span className="legend-chip" style={{ background: '#ef4444' }}>301-400 Very Poor</span>
-                            <span className="legend-chip" style={{ background: '#991b1b' }}>401+ Severe</span>
+                            <span className="legend-chip" style={{ background: '#7f1d1d' }}>401+ Severe</span>
                         </div>
+
                     </div>
                 )}
             </div>

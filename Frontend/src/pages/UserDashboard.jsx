@@ -12,7 +12,9 @@ import {
 } from "recharts";
 import { userAPI, publicAPI } from "../api.js";
 import { UserDashboardSkeleton } from "../components/Skeleton.jsx";
+import { getIndianAqiColor, getIndianAqiLabel } from "../utils/aqiStandards.js";
 import "./UserDashboard.css";
+
 
 const UserDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -82,21 +84,9 @@ const UserDashboard = () => {
     }
   }, []);
 
-  const getAqiLevel = (pm25) => {
-    if (pm25 <= 50) return "Good";
-    if (pm25 <= 100) return "Satisfactory";
-    if (pm25 <= 200) return "Moderately Polluted";
-    if (pm25 <= 300) return "Poor";
-    return "Very Poor";
-  };
+  const getAqiLevel = (pm25) => getIndianAqiLabel(pm25);
+  const getAqiColor = (pm25) => getIndianAqiColor(pm25);
 
-  const getAqiColor = (pm25) => {
-    if (pm25 <= 50) return "#10b981";
-    if (pm25 <= 100) return "#f59e0b";
-    if (pm25 <= 200) return "#f97316";
-    if (pm25 <= 300) return "#ef4444";
-    return "#7c2d12";
-  };
 
   if (loading) {
     return <UserDashboardSkeleton />;
@@ -384,12 +374,18 @@ const UserDashboard = () => {
               ));
             })()}
           </div>
-          <Link to="/map" className="view-all-link">
-            Explore All on Interactive Map →
-          </Link>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+            <Link to="/stations" className="view-all-link">
+              View All Stations List →
+            </Link>
+            <Link to="/map" className="view-all-link">
+              Explore on Interactive Map →
+            </Link>
+          </div>
         </section>
       </div>
     </main>
+
   );
 };
 

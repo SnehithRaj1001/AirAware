@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { fetchStations, fetchAqiTrends } from '../api.js'
 import PollutantChart from '../components/PollutantChart.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
 import { Skeleton } from '../components/Skeleton.jsx'
+import { getIndianAqiBand } from '../utils/aqiStandards.js'
 import './Trends.css'
+
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
@@ -214,12 +216,34 @@ const Trends = () => {
 
   return (
     <main className="page-shell">
-      <div className="section-header">
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1>Analysis & Forecasting</h1>
           <p>Explore historical trends and ML-powered predictions.</p>
         </div>
+        {selectedStation && (
+          <Link
+            to={`/compare?mode=station&stationIds=${selectedStation}`}
+            className="tab-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              color: 'var(--accent)',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: '13px'
+            }}
+          >
+            ⚖️ Compare this Station
+          </Link>
+        )}
       </div>
+
 
       <div className="controls-row trends-controls-row">
         <div className="filters-group">
@@ -336,9 +360,11 @@ const Trends = () => {
                   });
 
                   const dayAqi = Math.round(maxVal > 0 ? maxVal : 0);
-                  const aqiColor = dayAqi > 200 ? '#7f1d1d' : dayAqi > 100 ? '#ef4444' : dayAqi > 50 ? '#f59e0b' : '#10b981';
+                  const aqiBand = getIndianAqiBand(dayAqi);
+                  const aqiColor = aqiBand.color;
                   
                   return (
+
                     <tr key={idx}>
                       <td>{row.date}</td>
                       {pollutantList.map(({ key }) => {

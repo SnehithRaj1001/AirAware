@@ -139,9 +139,10 @@ const Dashboard = () => {
     <main className="page-shell">
       <section className="hero-panel">
         <div>
-          <h1>AirAware Dashboard</h1>
+          <h1>Air Quality Monitoring Stations</h1>
           <div className="hero-subtitle-row">
-            <p>Monitor real-time air quality and pollution trends across stations.</p>
+            <p>Monitor real-time air quality observations across all Maharashtra stations.</p>
+
             {userCoords && (
               <span className="location-pill live-gps-pill">
                 📍 GPS Distance Active

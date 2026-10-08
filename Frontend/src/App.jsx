@@ -7,6 +7,7 @@ import RtaqiDashboard from "./pages/RtaqiDashboard.jsx";
 import UserDashboard from "./pages/UserDashboard.jsx";
 import StationDetails from "./pages/StationDetails.jsx";
 import Trends from "./pages/Trends.jsx";
+import Compare from "./pages/Compare.jsx";
 import Profile from "./pages/Profile.jsx";
 import Login from "./pages/Login.jsx";
 import "./App.css";
@@ -18,8 +19,10 @@ function App() {
         <Navbar />
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/stations" element={<Dashboard />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/compare" element={<Compare />} />
           <Route path="/rtaqi" element={<RtaqiDashboard />} />
           <Route path="/login" element={<Login />} />
 
@@ -40,6 +43,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/trends"
             element={

@@ -18,7 +18,13 @@ A full-stack web application for monitoring, analyzing, and forecasting air qual
 - **Cascading Trends Explorer & Deep-Linking**:
   - Two-tier **City → Station** cascading dropdown selectors across all 88 monitoring stations.
   - Deep-link support (`/station/:id` → `/trends?stationId=:id`) automatically pre-selecting the correct city and station.
+- **Side-by-Side Station & City Comparison (`/compare`)**:
+  - Benchmarking engine supporting simultaneous comparison across up to 6 stations or metropolitan cities.
+  - Interactive pollutant trajectory curves with custom timeframe windows (7d, 14d, 30d, 90d).
+  - Comparative scorecards displaying latest metrics, rolling averages, peak levels, and AQI health status badges.
+  - Automated ranking matrix ordering locations from cleanest to most polluted.
 - **Machine Learning & Time-Series Forecasting**:
+
   - Station-specific XGBoost models predicting 3, 7, and 14-day forecasts for individual pollutants (PM2.5, PM10, NO2, SO2, CO, Ozone).
   - Server-Sent Events (SSE) live streaming during on-demand model retraining from the UI.
 - **IoT Hardware Sensor Telemetry (RTAQI)**:
@@ -207,15 +213,19 @@ Station-specific XGBoost models can be generated in two ways:
 
 ---
 
-## 📊 Air Quality Index Standards (PM2.5)
+## 📊 Indian National Air Quality Index (NAQI) Standards
 
-| Category | PM2.5 Range | Hex Color | Health Advisory |
-|---|---|---|---|
-| **Good** | 0 – 12 µg/m³ | `#10b981` | Air quality is satisfactory; minimal or no risk. |
-| **Moderate** | 12.1 – 35.4 µg/m³ | `#fbbf24` | Acceptable quality; sensitive individuals should take caution. |
-| **Unhealthy (Sensitive)** | 35.5 – 55.4 µg/m³ | `#f59e0b` | General public not likely affected; sensitive groups may experience effects. |
-| **Unhealthy** | 55.5 – 150.4 µg/m³ | `#ef4444` | Increased likelihood of adverse effects in sensitive groups; general public impacted. |
-| **Very Unhealthy / Severe** | 150.5+ µg/m³ | `#7c3aed` | Health alert: Everyone may experience more serious health effects. |
+AirAware adheres strictly to the official Indian National Air Quality Index (NAQI) standards and color schema defined by the Central Pollution Control Board (CPCB):
+
+| Category | AQI Range | Color | Hex Code | Health Advisory |
+|---|---|---|---|---|
+| **Good** | 0 – 50 | 🟢 Green | `#10b981` | Minimal health impact. Cleanest air. |
+| **Satisfactory** | 51 – 100 | 🟡 Lime | `#84cc16` | Minor breathing discomfort to sensitive individuals. |
+| **Moderate** | 101 – 200 | 🟠 Amber | `#f59e0b` | Breathing discomfort to people with lungs, asthma, and heart conditions. |
+| **Poor** | 201 – 300 | 🟧 Orange | `#f97316` | Breathing discomfort to most people on prolonged exposure. |
+| **Very Poor** | 301 – 400 | 🔴 Red | `#ef4444` | Respiratory illness to people on prolonged exposure. |
+| **Severe** | 401+ | 🟤 Dark Red / Maroon | `#7f1d1d` | Affects healthy people and seriously impacts those with existing ailments. |
+
 
 ---
 

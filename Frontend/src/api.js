@@ -105,4 +105,15 @@ export const fetchDashboardSummary = async () => {
   return (await apiClient.get("/dashboard/summary")).data;
 };
 
+export const fetchStationComparison = async (stationIds, days = 30) => {
+  const idsStr = Array.isArray(stationIds) ? stationIds.join(",") : stationIds;
+  return (await apiClient.get("/aqi/compare/stations", { params: { ids: idsStr, days } })).data;
+};
+
+export const fetchCityComparison = async (cities, days = 30) => {
+  const citiesStr = Array.isArray(cities) ? cities.join(",") : cities;
+  return (await apiClient.get("/aqi/compare/cities", { params: { cities: citiesStr, days } })).data;
+};
+
+
 export default apiClient;

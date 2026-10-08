@@ -1,14 +1,6 @@
 import { Link } from "react-router-dom";
+import { getIndianAqiBand } from "../utils/aqiStandards.js";
 import "./StationCard.css";
-
-const getLevelClass = (pm25) => {
-  if (pm25 == null) return "level-unknown";
-  if (pm25 <= 12) return "level-good";
-  if (pm25 <= 35.4) return "level-moderate";
-  if (pm25 <= 55.4) return "level-unhealthy-sensitive";
-  if (pm25 <= 150.4) return "level-unhealthy";
-  return "level-very-unhealthy";
-};
 
 const StationCard = ({ station }) => {
   // Handle both old and new API formats
@@ -16,7 +8,13 @@ const StationCard = ({ station }) => {
   const latestAqi = station.latestAqi || station.latest || {};
   const stationId = station.id || station.station_id;
   
-  const cardClass = getLevelClass(latestAqi.pm25);
+  // Calculate AQI (PM2.5 or max recorded pollutant)
+  const aqiVal = latestAqi.aqi != null 
+    ? latestAqi.aqi 
+    : (latestAqi.pm25 != null ? latestAqi.pm25 : null);
+  const band = getIndianAqiBand(aqiVal);
+  const cardClass = band.className;
+
 
   return (
     <article className={`station-card ${cardClass}`}>
@@ -45,12 +43,27 @@ const StationCard = ({ station }) => {
           <span>{latestAqi.pm10 ?? "--"}</span>
         </div>
       </div>
-      <div className="station-card__footer">
-        <Link to={`/station/${stationId}`} className="details-link">
+      <div className="station-card__footer" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <Link to={`/station/${stationId}`} className="details-link" style={{ flex: 1, textAlign: 'center' }}>
           View details
+        </Link>
+        <Link
+          to={`/compare?mode=station&stationIds=${stationId}`}
+          className="details-link"
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            padding: '8px 12px',
+            fontSize: '12px'
+          }}
+          title="Compare this station"
+        >
+          ⚖️ Compare
         </Link>
       </div>
     </article>
+
   );
 };
 
