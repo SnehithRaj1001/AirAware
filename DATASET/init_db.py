@@ -11,15 +11,14 @@ def main():
 
     load_dotenv(env_path)
 
-    print("Connecting to DB to initialize tables...")
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        print("Error: DATABASE_URL not found in .env.")
+        return
+
+    print("Connecting to Supabase PostgreSQL via DATABASE_URL to initialize tables...")
     try:
-        conn = psycopg2.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            database=os.getenv('DB_NAME', 'postgres'),
-            user=os.getenv('DB_USER', 'postgres'),
-            password=os.getenv('DB_PASSWORD', 'password'),
-            port=os.getenv('DB_PORT', '5432')
-        )
+        conn = psycopg2.connect(db_url, sslmode="require")
         conn.autocommit = True
         cursor = conn.cursor()
 

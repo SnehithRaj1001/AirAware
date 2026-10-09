@@ -1,12 +1,23 @@
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import pkg from "pg";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
+
 const { Pool } = pkg;
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is required.");
+}
+
 const pool = new Pool({
-  user: process.env.DB_USER || "postgres",
-  host: process.env.DB_HOST || "localhost",
-  database: process.env.DB_NAME || "AirAware",
-  password: process.env.DB_PASSWORD || "123456",
-  port: Number(process.env.DB_PORT || 5432),
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000,
 });

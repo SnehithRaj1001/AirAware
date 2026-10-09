@@ -10,14 +10,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# DB Configuration
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "database": os.getenv("DB_NAME", "AirAware"),
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", "123456"),
-    "port": os.getenv("DB_PORT", "5432")
-}
+def get_db_connection():
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL environment variable is required.")
+    return psycopg2.connect(db_url, sslmode="require")
 
 TARGETS = ["PM2.5", "PM10", "NO2", "NH3", "SO2", "CO", "Ozone"]
 DATE_COL = "Date"
@@ -27,7 +24,7 @@ ROLLING_WINDOWS = [3, 7, 14]
 
 def fetch_data_from_db(station_id):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
         query = f"""
             SELECT recorded_at as "{DATE_COL}", 
                    pm25 as "PM2.5", pm10 as "PM10", no2 as "NO2", 

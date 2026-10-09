@@ -39,59 +39,64 @@ export const getNews = async (req, res, next) => {
   }
 };
 
+export const getMapConfig = async (req, res, next) => {
+  try {
+    res.json({
+      cartoApiKey: process.env.CARTO_API_KEY || "",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAllStations = async (req, res, next) => {
   try {
     const result = await db.query(
-      `SELECT s.id, s.station_name, s.file_name, s.latitude, s.longitude, s.address
+      `SELECT s.id, 
+              s.station_name AS "stationName", 
+              s.city,
+              s.file_name AS "fileName", 
+              s.latitude, 
+              s.longitude, 
+              s.address,
+              a.date,
+              a.pm25,
+              a.pm10,
+              a.ozone AS o3,
+              a.no2,
+              a.so2,
+              a.co
        FROM stations s
-       ORDER BY s.station_name`
+       LEFT JOIN LATERAL (
+         SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co
+         FROM aqi_data
+         WHERE station_id = s.id
+         ORDER BY recorded_at DESC NULLS LAST
+         LIMIT 1
+       ) a ON true
+       ORDER BY s.station_name ASC`
     );
 
-    const stations = await Promise.all(
-      result.rows.map(async (row) => {
-        const aqiResult = await db.query(
-          `SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co
-           FROM aqi_data
-           WHERE station_id = $1
-           ORDER BY recorded_at DESC LIMIT 100`,
-          [row.id]
-        );
-
-        const rows = aqiResult.rows;
-        let latestAqi = null;
-
-        if (rows.length > 0) {
-          const pollutantFields = ['pm25', 'pm10', 'ozone', 'no2', 'so2', 'co'];
-          latestAqi = {
-            date: rows[0].date,
-          };
-
-          pollutantFields.forEach(field => {
-            latestAqi[field] = null;
-            for (const aqiRow of rows) {
-              if (aqiRow[field] != null) {
-                // coerce numeric strings to numbers
-                latestAqi[field] = typeof aqiRow[field] === 'string' ? Number(aqiRow[field]) : aqiRow[field];
-                break;
-              }
-            }
-          });
-          if (latestAqi.ozone !== undefined) {
-            latestAqi.o3 = latestAqi.ozone;
+    const stations = result.rows.map((row) => ({
+      id: row.id,
+      stationName: row.stationName,
+      city: row.city,
+      fileName: row.fileName,
+      latitude: row.latitude != null ? Number(row.latitude) : null,
+      longitude: row.longitude != null ? Number(row.longitude) : null,
+      address: row.address,
+      latestAqi: row.date
+        ? {
+            date: row.date,
+            pm25: row.pm25 != null ? Number(row.pm25) : null,
+            pm10: row.pm10 != null ? Number(row.pm10) : null,
+            o3: row.o3 != null ? Number(row.o3) : null,
+            no2: row.no2 != null ? Number(row.no2) : null,
+            so2: row.so2 != null ? Number(row.so2) : null,
+            co: row.co != null ? Number(row.co) : null,
           }
-        }
-
-        return {
-          id: row.id,
-          stationName: row.station_name,
-          fileName: row.file_name,
-          latitude: row.latitude != null ? Number(row.latitude) : null,
-          longitude: row.longitude != null ? Number(row.longitude) : null,
-          address: row.address,
-          latestAqi,
-        };
-      })
-    );
+        : null,
+    }));
 
     res.json(stations);
   } catch (error) {

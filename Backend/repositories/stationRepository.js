@@ -2,14 +2,14 @@ import db from "../db.js";
 
 export const findAllStations = async () => {
   const result = await db.query(
-    "SELECT id, station_name, file_name, latitude, longitude FROM stations ORDER BY station_name ASC",
+    "SELECT id, station_name, city, file_name, latitude, longitude FROM stations ORDER BY station_name ASC",
   );
   return result.rows;
 };
 
 export const findStationById = async (id) => {
   const result = await db.query(
-    "SELECT id, station_name, file_name, latitude, longitude, address FROM stations WHERE id = $1",
+    "SELECT id, station_name, city, file_name, latitude, longitude, address FROM stations WHERE id = $1",
     [id],
   );
   return result.rows[0];
@@ -78,6 +78,7 @@ export const findLatestReadingForAllStations = async () => {
   const result = await db.query(
     `SELECT s.id AS station_id,
             s.station_name,
+            s.city,
             s.file_name,
             s.latitude,
             s.longitude,

@@ -12,13 +12,18 @@ export const getUserDashboardData = async (userId) => {
 
   // Find station by user's location
   const stationResult = await db.query(
-    "SELECT id, station_name, file_name FROM stations WHERE LOWER(station_name) LIKE LOWER($1) LIMIT 1",
+    "SELECT id, station_name, file_name, latitude, longitude, address FROM stations WHERE LOWER(station_name) LIKE LOWER($1) LIMIT 1",
     [`%${user.location}%`]
   );
 
   let station = null;
   if (stationResult.rows.length > 0) {
-    station = stationResult.rows[0];
+    const s = stationResult.rows[0];
+    station = {
+      ...s,
+      latitude: s.latitude != null ? Number(s.latitude) : null,
+      longitude: s.longitude != null ? Number(s.longitude) : null,
+    };
   }
 
   // Get latest AQI data with fallback to previous non-null values

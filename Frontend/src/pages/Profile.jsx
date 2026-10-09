@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { authAPI } from "../api";
+import { ProfileSkeleton } from "../components/Skeleton.jsx";
 import "./Profile.css";
 
 export default function Profile() {
@@ -134,14 +135,7 @@ export default function Profile() {
   };
 
   if (loading) {
-    return (
-      <div className="profile-container">
-        <div className="profile-loading">
-          <div className="spinner"></div>
-          <p>Loading your profile...</p>
-        </div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchLatestAqi, fetchAqiTrends } from "../api.js";
 import PollutantChart from "../components/PollutantChart.jsx";
+import { StationDetailsSkeleton } from "../components/Skeleton.jsx";
+import { getIndianAqiBand } from "../utils/aqiStandards.js";
 import "./StationDetails.css";
 
 const StationDetails = () => {
@@ -35,21 +37,15 @@ const StationDetails = () => {
     loadStationData();
   }, [id]);
 
-  if (loading) return <div className="page-shell"><div className="loading-container"><div className="spinner"></div></div></div>;
+  if (loading) return <StationDetailsSkeleton />;
   if (error) return <div className="page-shell"><div className="error-box">{error}</div></div>;
   if (!data) return <div className="page-shell">No data found</div>;
 
   const { station, latest } = data;
   const aqiValue = Math.round(latest.aqi) || 0;
 
-  const getStatus = (val) => {
-    if (val <= 50) return { label: "Good", color: "#10b981", bg: "rgba(16, 185, 129, 0.12)" };
-    if (val <= 100) return { label: "Satisfactory", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.12)" };
-    if (val <= 200) return { label: "Moderate", color: "#ef4444", bg: "rgba(239, 68, 68, 0.12)" };
-    return { label: "Poor", color: "#dc2626", bg: "rgba(220, 38, 38, 0.15)" };
-  };
+  const status = getIndianAqiBand(aqiValue);
 
-  const status = getStatus(aqiValue);
 
   const pollutants = [
     { key: "pm25", label: "PM2.5", value: latest.pm25, unit: "µg/m³" },
@@ -69,10 +65,11 @@ const StationDetails = () => {
           <p>Real-time Air Quality Monitoring & Analysis</p>
         </div>
         <div>
-          <Link to="/" className="secondary-button">
-            <span>←</span> Back to Dashboard
+          <Link to="/stations" className="secondary-button">
+            <span>←</span> Back to Stations
           </Link>
         </div>
+
       </div>
 
       <div className="station-details-grid">
@@ -170,12 +167,18 @@ const StationDetails = () => {
               <span className="station-info-label">Last Updated</span>
               <span className="station-info-value">{new Date(latest.date).toLocaleString()}</span>
             </div>
-            <Link to="/trends" className="sidebar-action-btn">
-              Full Analysis
-            </Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+              <Link to={`/trends?stationId=${id}`} className="sidebar-action-btn">
+                📈 Full Analysis
+              </Link>
+              <Link to={`/compare?mode=station&stationIds=${id}`} className="sidebar-action-btn" style={{ background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border)', textAlign: 'center' }}>
+                ⚖️ Compare Station
+              </Link>
+            </div>
           </div>
         </div>
       </div>
+
     </main>
   );
 };

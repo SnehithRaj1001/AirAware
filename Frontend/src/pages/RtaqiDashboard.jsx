@@ -10,7 +10,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import { rtaqiAPI } from "../api.js";
+import { getIndianAqiBand } from "../utils/aqiStandards.js";
 import "./RtaqiDashboard.css";
+
 
 // Breakpoint and helper functions for AQI rating based on Indian / US EPA standards
 const calculateOverallAqi = (reading) => {
@@ -52,16 +54,10 @@ const calculateOverallAqi = (reading) => {
 };
 
 const getAqiCategory = (aqi) => {
-  if (aqi === null || aqi === undefined) {
-    return { label: "Unknown", color: "#64748b", bg: "rgba(100,116,139,0.1)", desc: "Awaiting data" };
-  }
-  if (aqi <= 50) return { label: "Good", color: "#10b981", bg: "rgba(16,185,129,0.12)", desc: "Minimal impact on health" };
-  if (aqi <= 100) return { label: "Satisfactory", color: "#84cc16", bg: "rgba(132,204,22,0.12)", desc: "Minor breathing discomfort to sensitive people" };
-  if (aqi <= 200) return { label: "Moderate", color: "#f59e0b", bg: "rgba(245,158,11,0.12)", desc: "Breathing discomfort to people with lungs/asthma/heart" };
-  if (aqi <= 300) return { label: "Poor", color: "#f97316", bg: "rgba(249,115,22,0.12)", desc: "Breathing discomfort to most people on prolonged exposure" };
-  if (aqi <= 400) return { label: "Very Poor", color: "#ef4444", bg: "rgba(239,68,68,0.12)", desc: "Respiratory illness on prolonged exposure" };
-  return { label: "Severe", color: "#7f1d1d", bg: "rgba(127,29,29,0.2)", desc: "Affects healthy people and seriously impacts those with diseases" };
+  return getIndianAqiBand(aqi);
 };
+
+
 
 export default function RtaqiDashboard() {
   const [latest, setLatest] = useState(null);

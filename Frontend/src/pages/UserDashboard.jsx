@@ -11,7 +11,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { userAPI, publicAPI } from "../api.js";
+import { UserDashboardSkeleton } from "../components/Skeleton.jsx";
+import { getIndianAqiColor, getIndianAqiLabel } from "../utils/aqiStandards.js";
 import "./UserDashboard.css";
+
 
 const UserDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -46,31 +49,47 @@ const UserDashboard = () => {
     loadData();
   }, []);
 
-  const getAqiLevel = (pm25) => {
-    if (pm25 <= 50) return "Good";
-    if (pm25 <= 100) return "Satisfactory";
-    if (pm25 <= 200) return "Moderately Polluted";
-    if (pm25 <= 300) return "Poor";
-    return "Very Poor";
+  const [userCoords, setUserCoords] = useState(null);
+
+  // Haversine formula to compute distance in km
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+    const R = 6371; // Earth radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
-  const getAqiColor = (pm25) => {
-    if (pm25 <= 50) return "#10b981";
-    if (pm25 <= 100) return "#f59e0b";
-    if (pm25 <= 200) return "#f97316";
-    if (pm25 <= 300) return "#ef4444";
-    return "#7c2d12";
-  };
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoords({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        },
+        () => {
+          // Geolocation denied or unavailable; fallback will use user's assigned station coordinates
+        },
+        { timeout: 8000 }
+      );
+    }
+  }, []);
+
+  const getAqiLevel = (pm25) => getIndianAqiLabel(pm25);
+  const getAqiColor = (pm25) => getIndianAqiColor(pm25);
+
 
   if (loading) {
-    return (
-      <main className="page-shell">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading your dashboard...</p>
-        </div>
-      </main>
-    );
+    return <UserDashboardSkeleton />;
   }
 
   if (error) {
@@ -81,8 +100,30 @@ const UserDashboard = () => {
     );
   }
 
+  // Compute ranked stations based on proximity to user
+  const baseLat = userCoords?.latitude ?? dashboardData?.station?.latitude;
+  const baseLon = userCoords?.longitude ?? dashboardData?.station?.longitude;
+
+  const rankedStations = stations
+    .map((station) => {
+      const dist =
+        baseLat != null && baseLon != null && station.latitude != null && station.longitude != null
+          ? calculateDistance(baseLat, baseLon, station.latitude, station.longitude)
+          : null;
+      return { ...station, distanceKm: dist };
+    })
+    .sort((a, b) => {
+      if (a.distanceKm == null && b.distanceKm == null) return 0;
+      if (a.distanceKm == null) return 1;
+      if (b.distanceKm == null) return -1;
+      return a.distanceKm - b.distanceKm;
+    });
+
+  // Nearest station fallback: closest station with AQI, or user's assigned dashboard station
+  const nearestStation = rankedStations.find((s) => s.latestAqi) || rankedStations[0] || dashboardData?.station;
+  const activeStation = nearestStation || dashboardData?.station;
+  const activeStationAqi = activeStation?.latestAqi || dashboardData?.latestAqi;
   const userTrends = trendsData?.data || [];
-  const latestAqi = dashboardData?.latestAqi;
 
   return (
     <main className="page-shell dashboard-main">
@@ -94,65 +135,81 @@ const UserDashboard = () => {
             {dashboardData?.user?.lastName}!
           </h1>
           <p>
-            Monitoring air quality in <strong>{dashboardData?.user?.location}</strong>
+            Air quality near <strong>{dashboardData?.user?.location || "you"}</strong>
+            {userCoords && <span className="location-pill live-gps-pill">📍 Live GPS Active</span>}
           </p>
         </div>
       </section>
 
-      {/* Current AQI Card */}
-      {latestAqi && (
+      {/* Current AQI Card for Nearest Station */}
+      {activeStationAqi && (
         <section className="current-aqi-section">
           <div className="aqi-card-container">
             <div
               className="aqi-card-main"
-              style={{ borderColor: getAqiColor(latestAqi.pm25) }}
+              style={{ borderColor: getAqiColor(activeStationAqi.pm25) }}
             >
               <div className="aqi-header">
-                <h2>{dashboardData?.station?.station_name}</h2>
+                <div>
+                  <div className="nearest-badge-tag">
+                    <span>🎯 Nearest Station</span>
+                    {activeStation?.distanceKm != null && (
+                      <span className="nearest-distance-val">
+                        • {activeStation.distanceKm < 1
+                          ? `${Math.round(activeStation.distanceKm * 1000)} m away`
+                          : `${activeStation.distanceKm.toFixed(1)} km away`}
+                      </span>
+                    )}
+                  </div>
+                  <h2>{activeStation?.stationName || activeStation?.station_name}</h2>
+                  {activeStation?.address && (
+                    <p className="station-address-sub">{activeStation.address}</p>
+                  )}
+                </div>
                 <span
                   className="aqi-level-badge"
-                  style={{ backgroundColor: getAqiColor(latestAqi.pm25) }}
+                  style={{ backgroundColor: getAqiColor(activeStationAqi.pm25) }}
                 >
-                  {getAqiLevel(latestAqi.pm25)}
+                  {getAqiLevel(activeStationAqi.pm25)}
                 </span>
               </div>
 
               <div className="aqi-grid">
                 <div className="aqi-item">
                   <span className="aqi-label">PM2.5</span>
-                  <strong className="aqi-value">{latestAqi.pm25 != null ? latestAqi.pm25.toFixed(1) : "--"}</strong>
+                  <strong className="aqi-value">{activeStationAqi.pm25 != null ? Number(activeStationAqi.pm25).toFixed(1) : "--"}</strong>
                   <span className="aqi-unit">µg/m³</span>
                 </div>
                 <div className="aqi-item">
                   <span className="aqi-label">PM10</span>
-                  <strong className="aqi-value">{latestAqi.pm10 != null ? latestAqi.pm10.toFixed(1) : "--"}</strong>
+                  <strong className="aqi-value">{activeStationAqi.pm10 != null ? Number(activeStationAqi.pm10).toFixed(1) : "--"}</strong>
                   <span className="aqi-unit">µg/m³</span>
                 </div>
                 <div className="aqi-item">
                   <span className="aqi-label">O₃</span>
-                  <strong className="aqi-value">{latestAqi.o3 != null ? latestAqi.o3.toFixed(1) : "--"}</strong>
+                  <strong className="aqi-value">{activeStationAqi.o3 != null ? Number(activeStationAqi.o3).toFixed(1) : "--"}</strong>
                   <span className="aqi-unit">ppb</span>
                 </div>
                 <div className="aqi-item">
                   <span className="aqi-label">NO₂</span>
-                  <strong className="aqi-value">{latestAqi.no2 != null ? latestAqi.no2.toFixed(1) : "--"}</strong>
+                  <strong className="aqi-value">{activeStationAqi.no2 != null ? Number(activeStationAqi.no2).toFixed(1) : "--"}</strong>
                   <span className="aqi-unit">ppb</span>
                 </div>
                 <div className="aqi-item">
                   <span className="aqi-label">SO₂</span>
-                  <strong className="aqi-value">{latestAqi.so2 != null ? latestAqi.so2.toFixed(1) : "--"}</strong>
+                  <strong className="aqi-value">{activeStationAqi.so2 != null ? Number(activeStationAqi.so2).toFixed(1) : "--"}</strong>
                   <span className="aqi-unit">ppb</span>
                 </div>
                 <div className="aqi-item">
                   <span className="aqi-label">CO</span>
-                  <strong className="aqi-value">{latestAqi.co != null ? latestAqi.co.toFixed(1) : "--"}</strong>
+                  <strong className="aqi-value">{activeStationAqi.co != null ? Number(activeStationAqi.co).toFixed(1) : "--"}</strong>
                   <span className="aqi-unit">ppm</span>
                 </div>
               </div>
 
               <div className="aqi-footer">
                 <small>
-                  Last updated: {new Date(latestAqi.date).toLocaleString()}
+                  {activeStationAqi.date ? `Last updated: ${new Date(activeStationAqi.date).toLocaleString()}` : "Live telemetry"}
                 </small>
               </div>
             </div>
@@ -249,32 +306,86 @@ const UserDashboard = () => {
 
         {/* Nearby Stations Section */}
         <section className="stations-section">
-          <h2>Nearby Stations</h2>
-          <div className="nearby-stations">
-            {stations.slice(0, 4).map((station) => (
-              <div key={station.id} className="station-preview">
-                <h4>{station.stationName}</h4>
-                {station.latestAqi ? (
-                  <div className="station-aqi-preview">
-                    <span className="pm25-value">
-                      PM2.5: {station.latestAqi?.pm25 != null ? station.latestAqi.pm25.toFixed(1) : "--"}
-                    </span>
-                    <span className="aqi-level">
-                      {getAqiLevel(station.latestAqi.pm25)}
-                    </span>
-                  </div>
-                ) : (
-                  <p className="no-data">No data available</p>
-                )}
-              </div>
-            ))}
+          <div className="section-header-inline">
+            <h2>Nearby Stations</h2>
+            {userCoords ? (
+              <span className="location-pill">📍 Live GPS</span>
+            ) : dashboardData?.station?.latitude ? (
+              <span className="location-pill">📍 Based on {dashboardData?.user?.location}</span>
+            ) : null}
           </div>
-          <Link to="/trends" className="view-all-link">
-            View All Stations →
-          </Link>
+          <div className="nearby-stations">
+            {(() => {
+              // Priority 1: User's GPS coords. Priority 2: User's home city station coords
+              const baseLat = userCoords?.latitude ?? dashboardData?.station?.latitude;
+              const baseLon = userCoords?.longitude ?? dashboardData?.station?.longitude;
+
+              const rankedStations = stations
+                .map((station) => {
+                  const dist = (baseLat != null && baseLon != null && station.latitude != null && station.longitude != null)
+                    ? calculateDistance(baseLat, baseLon, station.latitude, station.longitude)
+                    : null;
+                  return { ...station, distanceKm: dist };
+                })
+                .sort((a, b) => {
+                  if (a.distanceKm == null && b.distanceKm == null) return 0;
+                  if (a.distanceKm == null) return 1;
+                  if (b.distanceKm == null) return -1;
+                  return a.distanceKm - b.distanceKm;
+                });
+
+              return rankedStations.slice(0, 5).map((station, idx) => (
+                <div key={station.id} className="station-preview">
+                  <div className="station-header-row">
+                    <div className="station-title-wrap">
+                      <span className="station-rank-badge">#{idx + 1}</span>
+                      <Link to={`/station/${station.id}`} className="station-name-link">
+                        <h4>{station.stationName}</h4>
+                      </Link>
+                    </div>
+                    {station.distanceKm != null && (
+                      <span className="station-distance-chip">
+                        {station.distanceKm < 1 
+                          ? `${Math.round(station.distanceKm * 1000)} m away`
+                          : `${station.distanceKm.toFixed(1)} km away`}
+                      </span>
+                    )}
+                  </div>
+                  {station.latestAqi ? (
+                    <div className="station-aqi-preview">
+                      <span className="pm25-value">
+                        PM2.5: {station.latestAqi?.pm25 != null ? Number(station.latestAqi.pm25).toFixed(1) : "--"}
+                      </span>
+                      <span 
+                        className="aqi-level"
+                        style={{
+                          backgroundColor: `${getAqiColor(station.latestAqi.pm25)}15`,
+                          color: getAqiColor(station.latestAqi.pm25),
+                          borderColor: `${getAqiColor(station.latestAqi.pm25)}40`
+                        }}
+                      >
+                        {getAqiLevel(station.latestAqi.pm25)}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="no-data">No data available</p>
+                  )}
+                </div>
+              ));
+            })()}
+          </div>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+            <Link to="/stations" className="view-all-link">
+              View All Stations List →
+            </Link>
+            <Link to="/map" className="view-all-link">
+              Explore on Interactive Map →
+            </Link>
+          </div>
         </section>
       </div>
     </main>
+
   );
 };
 

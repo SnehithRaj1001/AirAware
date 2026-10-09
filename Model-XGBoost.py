@@ -22,13 +22,7 @@ LAGS = [1, 2, 3, 7, 14]
 ROLLING_WINDOWS = [3, 7, 14]
 SHORT_WINDOW_DAYS = 90
 
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "database": os.getenv("DB_NAME", "AirAware"),
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", "123456"),
-    "port": os.getenv("DB_PORT", "5432")
-}
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # ── LOAD DATA ─────────────────────────────────────────────────────────────────
 def load_data_from_csv(path):
@@ -42,7 +36,10 @@ def load_data_from_csv(path):
 
 def load_data_from_db(station_id):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        if not DATABASE_URL:
+            print("Error: DATABASE_URL not found in environment.")
+            sys.exit(1)
+        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         query = f"""
             SELECT recorded_at as "{DATE_COL}", 
                    pm25 as "PM2.5", pm10 as "PM10", no2 as "NO2", 
