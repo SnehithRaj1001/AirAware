@@ -211,10 +211,10 @@ export default function HealthAdvisoryWidget({ advisory, timeline = [], aiInsigh
           <div className="advisory-forecast-section" style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-light)' }}>
-                📅 3-Day Health Risk Outlook (Forecasted)
+                📅 {timeline.length}-Day Health Risk Outlook (Forecasted)
               </span>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                ML recursive rollout
+                Multi-Horizon Forecast Rollout
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
@@ -400,9 +400,30 @@ export default function HealthAdvisoryWidget({ advisory, timeline = [], aiInsigh
           </div>
         )}
 
+        {/* Medical and Clinical Disclaimer */}
+        <div
+          style={{
+            marginTop: "16px",
+            padding: "10px 14px",
+            background: "var(--bg-main)",
+            border: "1px solid var(--border)",
+            borderRadius: "8px",
+            fontSize: "11.5px",
+            color: "var(--text-muted)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span>⚕️</span>
+          <span>
+            <strong>Medical Disclaimer:</strong> AirAware provides heuristic wellness recommendations based on CPCB air quality breakpoints and self-reported risk factors. This does not constitute clinical diagnosis, medical prescription, or physician consultation. Consult qualified healthcare professionals for medical guidance.
+          </span>
+        </div>
+
         <div className="advisory-footer-row">
           <span>
-            Computed for <strong>{station?.stationName || station?.station_name || "Nearest Station"}</strong> (AQI: {advisory.predictedAqi})
+            Computed for <strong>{station?.stationName || station?.station_name || "Nearest Station"}</strong> (CPCB AQI: {advisory.predictedAqi})
           </span>
           <button
             type="button"

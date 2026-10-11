@@ -1,3 +1,8 @@
+"""
+Inference service for XGBoost residual-based air quality forecasting.
+Models predict the *change* from the previous day; final value = lag1 + change.
+Must match the feature engineering in Model-XGBoost.py exactly.
+"""
 import pandas as pd
 import numpy as np
 import sys
@@ -55,6 +60,11 @@ def make_features(df, targets):
             df[f"{col}_lag{lag}"] = df[col].shift(lag)
         for w in ROLLING_WINDOWS:
             df[f"{col}_roll{w}"] = df[col].shift(1).rolling(window=w).mean()
+        # Change features: must match training script
+        df[f"{col}_diff1"] = df[col].shift(1) - df[col].shift(2)
+        df[f"{col}_diff7"] = df[col].shift(1) - df[col].shift(8)
+        # Residual target (only needed for structure, not used in inference)
+        df[f"{col}_residual"] = df[col] - df[col].shift(1)
     return df
 
 def get_forecast(station_id, model_path):
@@ -69,12 +79,14 @@ def get_forecast(station_id, model_path):
     models = joblib.load(model_path)
     
     df_feat_sample = make_features(df.head(20), available_targets).dropna()
-    exclude = [DATE_COL] + available_targets
-    feature_cols = [c for c in df_feat_sample.columns if c not in exclude and "_Lag" not in c and "_MA" not in c and "Month" != c and "Day_of_Week" != c and "Is_Weekend" != c]
+    exclude = [DATE_COL] + available_targets + [f"{t}_residual" for t in available_targets]
+    feature_cols = [c for c in df_feat_sample.columns if c not in exclude
+                    and "_Lag" not in c and "_MA" not in c
+                    and "Month" != c and "Day_of_Week" != c and "Is_Weekend" != c]
 
     # Only the tail is required for lags (max lag 14) and rolling windows (max 14)
-    # Keeping only the recent 35 rows speeds up each day's feature generation significantly
-    future_df = df.tail(35).copy().reset_index(drop=True)
+    # Need extra rows for diff7 (shift(8)) — keeping 40 rows is safe
+    future_df = df.tail(40).copy().reset_index(drop=True)
     last_date = df[DATE_COL].max()
     forecast_rows = []
 
@@ -96,10 +108,12 @@ def get_forecast(station_id, model_path):
 
         row = {"date": next_date.strftime("%Y-%m-%d")}
         for target in available_targets:
-            pred_log = models[target].predict(X_next)[0]
-            pred = np.expm1(pred_log)
+            # Residual prediction: lag1 + predicted change
+            lag1_val = future_df[target].iloc[-1]
+            pred_change = models[target].predict(X_next)[0]
+            pred = max(lag1_val + float(pred_change), 0)
             # Convert to standard float to avoid JSON serialization errors
-            row[target.lower().replace(".", "")] = round(float(max(pred, 0)), 2)
+            row[target.lower().replace(".", "")] = round(float(pred), 2)
 
         forecast_rows.append(row)
         new_row = pd.DataFrame([{DATE_COL: next_date, **{t: row[t.lower().replace(".", "")] for t in available_targets}}])
@@ -130,4 +144,3 @@ if __name__ == "__main__":
         print(json.dumps(result, cls=NumpyEncoder))
     except Exception as e:
         print(json.dumps({"error": str(e)}))
-

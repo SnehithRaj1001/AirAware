@@ -113,8 +113,24 @@ CREATE TABLE IF NOT EXISTS user_symptom_logs (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     medication_taken BOOLEAN DEFAULT FALSE,
     symptoms_logged TEXT[],
-    symptom_severity VARCHAR(50),
+    symptom_severity TEXT,
     outdoor_time_hours DECIMAL(4, 1),
     notes TEXT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+------------ CREATE 'user_health_advisories' TABLE ------------
+CREATE TABLE IF NOT EXISTS user_health_advisories (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE,
+    station_name VARCHAR(255),
+    advisory_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    predicted_aqi INTEGER,
+    risk_score INTEGER,
+    risk_level VARCHAR(50),
+    ai_insights TEXT,
+    payload JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_station_advisory_date UNIQUE(user_id, station_id, advisory_date)
 );

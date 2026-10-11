@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { userAPI, publicAPI } from "../api.js";
 import { UserDashboardSkeleton } from "../components/Skeleton.jsx";
-import { getIndianAqiBand, getIndianAqiColor, getIndianAqiLabel } from "../utils/aqiStandards.js";
+import { getIndianAqiBand, getIndianAqiColor, getIndianAqiLabel, calculateCpcbAqi } from "../utils/aqiStandards.js";
 import HealthAdvisoryWidget from "../components/HealthAdvisoryWidget.jsx";
 import "./UserDashboard.css";
 
@@ -127,12 +127,15 @@ const UserDashboard = () => {
   const activeStationAqi = activeStation?.latestAqi || dashboardData?.latestAqi;
   const userTrends = trendsData?.data || [];
 
-  // Calculate final/composite AQI for the active station
-  const activeOverallAqi = activeStationAqi?.aqi != null
-    ? Math.round(Number(activeStationAqi.aqi))
-    : (activeStationAqi?.pm25 != null
-      ? Math.round(Number(activeStationAqi.pm25))
-      : (dashboardData?.healthAdvisory?.predictedAqi || 50));
+  // Calculate final/composite AQI for the active station using standard CPCB formula
+  const activeOverallAqi = (() => {
+    if (activeStationAqi?.aqi != null) return Math.round(Number(activeStationAqi.aqi));
+    if (activeStationAqi) {
+      const cpcb = calculateCpcbAqi(activeStationAqi);
+      if (cpcb.aqi > 0) return cpcb.aqi;
+    }
+    return dashboardData?.healthAdvisory?.predictedAqi || 50;
+  })();
   const activeAqiBand = getIndianAqiBand(activeOverallAqi);
 
   const stationPollutants = [

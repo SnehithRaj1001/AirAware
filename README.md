@@ -1,234 +1,409 @@
-# AirAware - Air Quality Monitoring & Forecasting Platform
+# AirAware 🌍
 
-A full-stack web application for monitoring, analyzing, and forecasting air quality across 88 stations in Maharashtra, India. Features continuous geospatial heatmaps, ML forecasting via XGBoost, live IoT sensor integration, and real-time distance-based station ranking.
+**Real-time air quality monitoring, forecasting, and personalized health advisory platform for Maharashtra, India.**
 
----
-
-## ✨ Features
-
-- **Interactive Fluid Heatmap (`MapView`)**:
-  - Continuous geospatial density heatmap powered by `leaflet.heat` displaying smooth AQI pollutant gradients across Maharashtra.
-  - Native theme toggle (Dark / Light mode) with high-contrast, watermark-free cartography filters.
-  - Dynamic display controls to toggle between continuous heat clouds and individual station pin markers.
-- **Location-Aware Distance Ranking & Proximity Filter**:
-  - Live browser GPS detection (with graceful fallback to user-configured home station coordinates).
-  - Stations ranked in real-time by geographical proximity using the Haversine formula (`#1`, `#2`, etc.).
-  - Distance radius filtering (`Within 10km`, `25km`, `50km`, `100km`, `200km`) on the station explorer.
-  - Dynamic `🎯 Nearest Station` card featured on the user dashboard.
-- **Cascading Trends Explorer & Deep-Linking**:
-  - Two-tier **City → Station** cascading dropdown selectors across all 88 monitoring stations.
-  - Deep-link support (`/station/:id` → `/trends?stationId=:id`) automatically pre-selecting the correct city and station.
-- **Side-by-Side Station & City Comparison (`/compare`)**:
-  - Benchmarking engine supporting simultaneous comparison across up to 6 stations or metropolitan cities.
-  - Interactive pollutant trajectory curves with custom timeframe windows (7d, 14d, 30d, 90d).
-  - Comparative scorecards displaying latest metrics, rolling averages, peak levels, and AQI health status badges.
-  - Automated ranking matrix ordering locations from cleanest to most polluted.
-- **Machine Learning & Time-Series Forecasting**:
-
-  - Station-specific XGBoost models predicting 3, 7, and 14-day forecasts for individual pollutants (PM2.5, PM10, NO2, SO2, CO, Ozone).
-  - Server-Sent Events (SSE) live streaming during on-demand model retraining from the UI.
-- **IoT Hardware Sensor Telemetry (RTAQI)**:
-  - Ingests live telemetry from edge sensors (e.g. Raspberry Pi / ESP32) stored in Supabase with sub-minute sync.
-- **User Health Journal & Advisory**:
-  - Personalized profile tracking respiratory vulnerability, age, and a daily symptom diary with severity scoring.
-- **Modern UI & Shimmer Skeletons**:
-  - Polished responsive design system with shimmer skeleton loaders replacing jarring spinner states across all views.
+AirAware ingests daily pollutant data from 88 CPCB monitoring stations, computes official CPCB AQI values, generates 14-day XGBoost forecasts, and delivers personalized health advisories based on user health profiles — all through an interactive React dashboard with live maps and trend analytics.
 
 ---
 
-## 🛠️ Tech Stack
+## Table of Contents
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | React 19, Vite, React-Leaflet, Leaflet.heat, Recharts, Axios, Lucide React |
-| **Backend** | Node.js, Express.js (ES Modules), PostgreSQL (`pg`), JSON Web Tokens (JWT) |
-| **Database** | Supabase PostgreSQL (Connection Pooler with SSL) |
-| **Machine Learning** | Python 3.12, XGBoost, Scikit-learn, Pandas, Joblib |
-| **ETL & Data Pipeline** | Python, Selenium, CPCB Official Portal Scraper |
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [API Reference](#api-reference)
+- [ML Forecasting Model](#ml-forecasting-model)
+- [Health Advisory System](#health-advisory-system)
+- [AQI Calculation](#aqi-calculation)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Data Pipeline](#data-pipeline)
 
 ---
 
-## 📁 Project Structure
+## Features
+
+### Public (No Login Required)
+- **Station Browser** — Browse all 88 CPCB stations with live AQI readings and color-coded cards
+- **Interactive Map** — CARTO-powered map view with station pins, popups, and AQI heatmap coloring
+- **Station Comparison** — Side-by-side comparison of multiple stations across all 7 pollutants
+- **Real-Time AQI Dashboard** — Live pollutant concentrations with CPCB-compliant AQI computation
+
+### Authenticated (Login Required)
+- **Personalized Dashboard** — Overview of nearest station AQI, health risk score, and forecast snapshot
+- **Station Details** — Deep-dive into individual station data with historical charts and 14-day forecast
+- **Trend Analytics** — Interactive time-series charts with date-range filtering across all pollutants
+- **Health Advisory** — AI-powered personalized health recommendations based on user profile, AQI forecast, and symptom history
+- **Health Profile** — User health data: age, conditions (asthma, COPD, etc.), smoking status, activity level, sensitivity
+- **Symptom Logger** — Track daily symptoms, medication usage, and outdoor exposure time
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Frontend (React + Vite)                  │
+│  Pages: Dashboard, Map, Stations, Trends, Compare, Profile   │
+│  Components: Navbar, StationCard, HealthAdvisoryWidget, etc. │
+└────────────────────────────┬────────────────────────────────┘
+                             │ REST API (JWT Auth)
+┌────────────────────────────┴────────────────────────────────┐
+│                    Backend (Express.js)                       │
+│  Controllers → Services → Repositories → PostgreSQL (Supa.)  │
+│                                                               │
+│  ┌──────────────┐  ┌──────────────────┐  ┌───────────────┐   │
+│  │ forecastSvc   │  │ healthAdvisorySvc│  │ cpcbAqiCalc   │   │
+│  │ (XGBoost .py) │  │ (rule engine +   │  │ (NAQI linear  │   │
+│  │               │  │  Gemini API)     │  │  interpolation│   │
+│  └──────────────┘  └──────────────────┘  └───────────────┘   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+┌──────────────────────────────┴──────────────────────────────┐
+│              PostgreSQL (Supabase)                            │
+│  Tables: stations, aqi_data, users, user_symptom_logs,       │
+│          user_health_advisories                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18, Vite, React Router v6, Recharts, Leaflet/CARTO |
+| **Backend** | Node.js, Express.js, ES Modules |
+| **Database** | PostgreSQL (hosted on Supabase) |
+| **ML Model** | Python, XGBoost, scikit-learn, pandas, NumPy |
+| **Auth** | JWT (jsonwebtoken + bcryptjs) |
+| **AI Advisory** | Google Gemini API (gemini-3.8-flash) |
+| **AQI Standard** | CPCB National Air Quality Index (NAQI) |
+| **Data Source** | CPCB continuous ambient air quality monitoring stations |
+
+---
+
+## Project Structure
 
 ```
 AirAware/
-├── Backend/                    # Express.js REST API
-│   ├── controllers/            # Route handlers (auth, stations, aqi, user, public, rtaqi)
-│   ├── routes/                 # Express routing declarations
-│   ├── services/               # Business logic & ML training execution
-│   ├── repositories/           # PostgreSQL queries (optimized LATERAL JOINs)
-│   ├── db.js                   # Supabase Pooler client (ESM dotenv-hoisted)
-│   └── server.js               # Application entry point
-├── Frontend/                   # React 19 + Vite client application
-│   ├── src/
-│   │   ├── components/         # Navbar, StationCard, Skeleton, PollutantChart, etc.
-│   │   ├── pages/              # PublicDashboard, UserDashboard, MapView, Trends, etc.
-│   │   └── api.js              # Centralized Axios HTTP client
-│   └── index.html
-├── DATASET/                    # Data ingestion & ETL pipeline
-│   ├── 1-fetchStationNames.py  # Scrapes station names from CPCB
-│   ├── 2-downloadFiles.py      # Downloads historical records
-│   ├── 3-updater.py            # Selenium scraper for incremental CPCB updates
-│   ├── 4-mergeFiles.py         # Merges years, interpolates, and generates lag features
-│   ├── 5-pushToDB.py           # Bulk loads processed dataset to Supabase PostgreSQL
-│   ├── init_db.py              # Schema generator from db.sql
-│   └── init_stations.py        # Seeds 88 Maharashtra monitoring stations
-├── models/                     # Trained XGBoost model binaries (.pkl)
-├── db.sql                      # Complete PostgreSQL schema definition
-├── Model-XGBoost.py            # Standalone XGBoost training script
-├── requirements.txt            # Python dependencies
-└── .env.example                # Root environment variables template
+├── Backend/
+│   ├── controllers/          # Route handlers
+│   │   ├── authController.js       # Register, login, profile CRUD
+│   │   ├── publicController.js     # Map, news, station data (no auth)
+│   │   ├── userController.js       # Dashboard, advisory, trends
+│   │   ├── stationController.js    # Station details + forecast
+│   │   ├── aqiController.js        # AQI data operations
+│   │   └── rtaqiController.js      # Real-time AQI endpoint
+│   ├── services/             # Business logic
+│   │   ├── forecastService.js      # Manages XGBoost model lifecycle
+│   │   ├── healthAdvisoryService.js # Risk scoring + Gemini AI
+│   │   ├── stationService.js       # Station + CPCB AQI queries
+│   │   ├── userDashboardService.js # Personalized dashboard data
+│   │   ├── iotSensorService.js     # Real-time sensor data
+│   │   └── mlService.py            # Python inference (called via child_process)
+│   ├── repositories/         # Database access layer
+│   ├── middleware/            # JWT auth middleware
+│   ├── routes/               # Express route definitions
+│   ├── utils/
+│   │   └── cpcbAqiCalculator.js    # Official CPCB NAQI breakpoints
+│   └── server.js             # Express app entry point
+│
+├── Frontend/
+│   └── src/
+│       ├── pages/
+│       │   ├── PublicDashboard.jsx  # Station browser (public)
+│       │   ├── UserDashboard.jsx    # Personalized dashboard (auth)
+│       │   ├── MapView.jsx          # Interactive station map
+│       │   ├── StationDetails.jsx   # Individual station deep-dive
+│       │   ├── Trends.jsx           # Historical trend analytics
+│       │   ├── Compare.jsx          # Multi-station comparison
+│       │   ├── RtaqiDashboard.jsx   # Real-time AQI dashboard
+│       │   ├── Profile.jsx          # Health profile + symptom logger
+│       │   └── Login.jsx            # Auth (login + register)
+│       ├── components/
+│       │   ├── HealthAdvisoryWidget.jsx  # Advisory with tabs & AI insights
+│       │   ├── Navbar.jsx           # Navigation bar
+│       │   ├── StationCard.jsx      # Station AQI summary card
+│       │   ├── PollutantChart.jsx   # Recharts pollutant chart
+│       │   └── Skeleton.jsx         # Loading state skeletons
+│       └── utils/
+│           └── aqiStandards.js      # Frontend CPCB AQI calculator
+│
+├── DATASET/
+│   ├── processed_data/       # 88 station CSVs (daily, Jan 2024–Oct 2026)
+│   ├── 1-fetchStationNames.py      # Scrape CPCB station list
+│   ├── 2-dowlnloadFiles.py         # Download raw data files
+│   ├── 3-updater.py                # Selenium-based daily updater
+│   ├── 4-mergeFiles.py             # Merge + clean raw data
+│   ├── 5-pushToDB.py               # Push processed CSVs to PostgreSQL
+│   └── Model-XGBoost.py            # Standalone training script
+│
+├── models/                   # Saved XGBoost .pkl model files
+├── Model-XGBoost.py          # Main training script (DB + CSV support)
+├── db.sql                    # Full database schema
+├── requirements.txt          # Python dependencies
+└── .env.example              # Environment variables template
 ```
 
 ---
 
-## ⚙️ Environment Configuration
+## Database Schema
 
-AirAware requires environment variables configured for the backend, database connection, and frontend client.
-
-### 1. Root & Backend Configuration (`.env` and `Backend/.env`)
-
-Create `.env` in the root folder and in `Backend/.env` (or copy from [`.env.example`](file:///i:/.College%20stuff/Sem%202/MAJOR%20PROJECT/AirAware/.env.example)):
-
-```env
-# ==========================================
-# Server Configuration
-# ==========================================
-PORT=4000
-NODE_ENV=development
-
-# ==========================================
-# Authentication
-# ==========================================
-JWT_SECRET=your_secure_random_32_character_secret_key_here
-JWT_EXPIRY=7d
-
-# ==========================================
-# Database Connection (Supabase PostgreSQL)
-# ==========================================
-# Note: Use Supabase Connection Pooler URL (Transaction or Session mode)
-DATABASE_URL=postgresql://postgres.your-project-ref:your-db-password@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
-
-# ==========================================
-# Supabase REST / IoT Sensor Service (Optional)
-# ==========================================
-# Found in: Supabase Dashboard -> Project Settings -> API
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-or-anon-key
-SUPABASE_TABLE=sensor_readings
-
-# ==========================================
-# Map Configuration (Optional)
-# ==========================================
-CARTO_API_KEY=your_carto_api_key_here
-```
-
-### 2. Frontend Configuration (`Frontend/.env`)
-
-Create `Frontend/.env`:
-
-```env
-# URL of the running backend Express API
-VITE_API_BASE_URL=http://localhost:4000
-```
+| Table | Purpose |
+|-------|---------|
+| `stations` | 88 CPCB monitoring stations with GPS coordinates |
+| `aqi_data` | Daily pollutant readings (PM2.5, PM10, NO₂, NH₃, SO₂, CO, O₃) with pre-computed lag and moving average features |
+| `users` | User accounts with health profile (age, conditions, smoking, activity level, sensitivity) |
+| `user_symptom_logs` | Daily symptom tracking (symptoms, severity, medication, outdoor time) |
+| `user_health_advisories` | Cached advisory results per user/station/day |
 
 ---
 
-## 🚀 Getting Started
+## API Reference
 
-### 1. Prerequisites
-- **Node.js**: v18.0+ (v20+ recommended)
-- **Python**: v3.10+ (v3.12 recommended)
-- **Supabase PostgreSQL** instance
+### Public Endpoints (No Authentication)
 
-### 2. Database Setup & Seeding
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/public/map/stations` | All stations with latest CPCB AQI |
+| `GET` | `/api/public/map/stations/:id` | Single station with AQI data |
+| `GET` | `/api/public/map/config` | CARTO map configuration |
+| `GET` | `/api/public/news` | Air quality news feed |
 
-1. **Install Python dependencies:**
-   ```powershell
-   pip install -r requirements.txt
-   ```
+### Auth Endpoints
 
-2. **Initialize Schema & Stations:**
-   ```powershell
-   # Create tables (users, stations, aqi_data, symptoms, predictions)
-   python DATASET/init_db.py
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Create account with health profile |
+| `POST` | `/api/auth/login` | Login, returns JWT token |
+| `GET` | `/api/auth/profile` | Get user profile |
+| `PUT` | `/api/auth/profile` | Update health profile |
 
-   # Seed 88 Maharashtra monitoring stations with coordinates
-   python DATASET/init_stations.py
-   ```
+### Protected Endpoints (JWT Required)
 
-3. **Ingest Processed Historical Telemetry:**
-   ```powershell
-   # Bulk uploads cleaned and preprocessed station records to Supabase
-   python DATASET/5-pushToDB.py
-   ```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/user/dashboard` | Personalized dashboard data |
+| `GET` | `/api/user/advisory` | Health advisory with risk score |
+| `GET` | `/api/user/trends` | Historical trend data |
+| `GET` | `/api/stations/:id/details` | Station detail + forecast |
+| `GET` | `/api/stations/:id/forecast` | 14-day XGBoost forecast (SSE stream) |
+| `GET` | `/api/rtaqi/stream` | Real-time AQI updates (SSE) |
 
-### 3. Start the Backend API
+---
 
-```powershell
+## ML Forecasting Model
+
+### Approach: XGBoost with Residual Modelling
+
+Instead of predicting absolute pollutant concentrations, the model predicts the **change from the previous day** (residual = `value[t] − value[t−1]`). The final forecast is computed as:
+
+```
+prediction[t] = actual[t-1] + predicted_change[t]
+```
+
+This ensures the model **cannot perform worse than persistence** (the "tomorrow = today" baseline) unless it actively produces harmful predictions.
+
+### Feature Engineering
+
+| Feature Type | Details |
+|-------------|---------|
+| Lag features | 1, 2, 3, 7, 14-day lags per pollutant |
+| Rolling means | 3, 7, 14-day rolling averages (shifted by 1) |
+| Momentum | 1-day and 7-day differences (`diff1`, `diff7`) |
+| Calendar | Day-of-week, month, day-of-year (cyclical sine/cosine) |
+
+### Hyperparameters
+
+| Parameter | Value |
+|-----------|-------|
+| `n_estimators` | 500 (early stopping, patience=50) |
+| `learning_rate` | 0.05 |
+| `max_depth` | 4 |
+| `subsample` | 0.8 |
+| `colsample_bytree` | 0.8 |
+| `reg_alpha` / `reg_lambda` | 0.1 / 1.0 |
+| `min_child_weight` | 5 |
+
+### Evaluation Results (88 stations, 616 evaluations)
+
+| Pollutant | Mean RMSE | Mean MAE | Median R² | Mean MAPE (%) | Beats Persistence (%) |
+|-----------|-----------|----------|-----------|---------------|----------------------|
+| PM2.5 | 8.213 | 4.974 | 0.676 | 23.51 | 97.7 |
+| PM10 | 16.115 | 11.003 | 0.699 | 21.27 | 100.0 |
+| NO₂ | 4.387 | 2.527 | 0.726 | 19.23 | 85.2 |
+| NH₃ | 5.279 | 2.714 | 0.695 | 21.42 | 81.8 |
+| SO₂ | 2.327 | 1.348 | 0.555 | 36.04 | 85.2 |
+| CO | 0.145 | 0.091 | 0.685 | 22.39 | 85.2 |
+| O₃ | 6.170 | 3.938 | 0.729 | 22.50 | 88.6 |
+
+**Overall: 89.1% of station-pollutant pairs beat the persistence baseline** (549/616).
+
+---
+
+## Health Advisory System
+
+A **rule-based risk scoring engine** that generates personalized health recommendations.
+
+### How It Works
+
+1. **Inputs**: User health profile (age, conditions, smoking, activity level, sensitivity) + AQI value for today and next 3 forecast days
+2. **Scoring**: Risk score from 5–100, computed as:
+   - AQI component (0–50 points) + Vulnerability component (0–50 points) × Amplifier
+   - Amplifier: ×1.1 for AQI > 100, ×1.25 for AQI > 200
+3. **Vulnerability weights**: COPD (+18), Asthma (+16), Heart disease (+14), Allergies (+8), Diabetes (+6), plus age/smoking/sensitivity/activity modifiers
+4. **Risk levels**: Low (<20), Guarded (20–34), Moderate (35–54), High (55–74), Critical (≥75)
+5. **Outputs**: 4 tips (outdoor, mask, ventilation, medication), alert chips, score breakdown
+6. **Optional AI**: Google Gemini generates 2–3 supplementary suggestions, cached per user/station/day
+
+> **Note**: This is a hand-weighted rule system, not an ML model. The Gemini integration is optional and provides supplementary narrative text only.
+
+---
+
+## AQI Calculation
+
+AirAware implements the **official CPCB National Air Quality Index (NAQI)** using linear interpolation:
+
+```
+Ip = [(I_Hi - I_Lo) / (B_Hi - B_Lo)] × (Cp - B_Lo) + I_Lo
+```
+
+- Sub-indices are computed for each pollutant against CPCB breakpoint tables
+- Overall AQI = max(all sub-indices)
+- Requires at least 3 pollutants monitored, with at least one being PM2.5 or PM10
+- Implemented in both backend (`cpcbAqiCalculator.js`) and frontend (`aqiStandards.js`)
+
+### AQI Categories
+
+| AQI Range | Category | Color |
+|-----------|----------|-------|
+| 0–50 | Good | Green |
+| 51–100 | Satisfactory | Light Green |
+| 101–200 | Moderate | Yellow |
+| 201–300 | Poor | Orange |
+| 301–400 | Very Poor | Red |
+| 401–500 | Severe | Dark Red |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** ≥ 18
+- **Python** ≥ 3.10 (for ML model)
+- **PostgreSQL** database (or Supabase account)
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/SnehithRaj1001/AirAware.git
+cd AirAware
+
+# Backend
 cd Backend
 npm install
-npm run dev
-```
-> The API server will start on `http://localhost:4000`.
 
-### 4. Start the Frontend Application
-
-In a separate terminal:
-```powershell
-cd Frontend
+# Frontend
+cd ../Frontend
 npm install
+
+# Python dependencies (for ML model)
+cd ..
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment
+
+```bash
+# Copy and edit the environment files
+cp .env.example .env
+cp Backend/.env.example Backend/.env
+```
+
+Edit `.env` and `Backend/.env` with your database URL, JWT secret, and optional API keys. See [Environment Variables](#environment-variables) for details.
+
+### 3. Set Up Database
+
+Run `db.sql` against your PostgreSQL database to create all required tables:
+
+```bash
+psql -d your_database -f db.sql
+```
+
+### 4. Load Station Data
+
+```bash
+cd DATASET
+python init_stations.py      # Insert 88 station records
+python 5-pushToDB.py         # Push processed CSV data to aqi_data
+```
+
+### 5. Run Development Servers
+
+```bash
+# Terminal 1: Backend (http://localhost:4000)
+cd Backend
+npm run dev
+
+# Terminal 2: Frontend (http://localhost:5173)
+cd Frontend
 npm run dev
 ```
-> The React application will be available at `http://localhost:5173`.
 
----
+### 6. Train Forecast Models (Optional)
 
-## 🔄 Daily Data ETL Pipeline
+Models are automatically trained on first request. To pre-train:
 
-To update the system with current air quality observations from the official CPCB portal:
-
-```powershell
-# 1. Scrape latest daily observations incrementally
-python DATASET/3-updater.py
-
-# 2. Compute 7-day moving averages, clean outliers, and compute lag features
-python DATASET/4-mergeFiles.py
-
-# 3. Push processed updates into Supabase (idempotent ON CONFLICT DO NOTHING)
-python DATASET/5-pushToDB.py
+```bash
+# Train for a specific station (by DB ID or CSV path)
+python Model-XGBoost.py 9
+python Model-XGBoost.py DATASET/processed_data/Mumbai_Bandra_Kurla_Complex__Mumbai___MPCB.csv
 ```
 
----
-
-## 🧠 ML Forecasting Model
-
-Station-specific XGBoost models can be generated in two ways:
-1. **Via the UI**: Navigate to **Trends** → select any station → click **AI Forecast** → **Train Model** (streams real-time SSE progress).
-2. **Via CLI**:
-   ```powershell
-   python Model-XGBoost.py
-   ```
-   Trained models and feature encoders are saved into the `models/` directory (`station_<id>.pkl`).
+Trained models are saved to `models/` as `.pkl` files.
 
 ---
 
-## 📊 Indian National Air Quality Index (NAQI) Standards
+## Environment Variables
 
-AirAware adheres strictly to the official Indian National Air Quality Index (NAQI) standards and color schema defined by the Central Pollution Control Board (CPCB):
-
-| Category | AQI Range | Color | Hex Code | Health Advisory |
-|---|---|---|---|---|
-| **Good** | 0 – 50 | 🟢 Green | `#10b981` | Minimal health impact. Cleanest air. |
-| **Satisfactory** | 51 – 100 | 🟡 Lime | `#84cc16` | Minor breathing discomfort to sensitive individuals. |
-| **Moderate** | 101 – 200 | 🟠 Amber | `#f59e0b` | Breathing discomfort to people with lungs, asthma, and heart conditions. |
-| **Poor** | 201 – 300 | 🟧 Orange | `#f97316` | Breathing discomfort to most people on prolonged exposure. |
-| **Very Poor** | 301 – 400 | 🔴 Red | `#ef4444` | Respiratory illness to people on prolonged exposure. |
-| **Severe** | 401+ | 🟤 Dark Red / Maroon | `#7f1d1d` | Affects healthy people and seriously impacts those with existing ailments. |
-
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PORT` | No | Backend port (default: 4000) |
+| `NODE_ENV` | No | `development` or `production` |
+| `DATABASE_URL` | **Yes** | PostgreSQL connection string |
+| `JWT_SECRET` | **Yes** | Secret for JWT token signing |
+| `JWT_EXPIRY` | No | Token expiry (default: `7d`) |
+| `SUPABASE_URL` | No | Supabase project URL (for IoT sensor data) |
+| `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
+| `CARTO_API_KEY` | No | CARTO Maps API key (for map tiles) |
+| `GEMINI_API_KEY` | No | Google AI API key (for AI advisory insights) |
 
 ---
 
-## 📄 License
+## Data Pipeline
 
-ISC License
+The data pipeline scrapes, processes, and loads air quality data from CPCB stations:
+
+```
+1-fetchStationNames.py  →  Scrape station names from CPCB portal
+         ↓
+2-downloadFiles.py      →  Download raw CSV data per station
+         ↓
+3-updater.py            →  Selenium-based daily data updater
+         ↓
+4-mergeFiles.py         →  Merge, clean, compute lag/MA features
+         ↓
+5-pushToDB.py           →  Upload processed data to PostgreSQL
+```
+
+**Dataset**: 88 stations × ~1,000 days × 7 pollutants (Jan 2024 – Oct 2026)
+
+---
+
+## License
+
+ISC

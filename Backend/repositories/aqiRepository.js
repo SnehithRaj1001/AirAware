@@ -1,4 +1,5 @@
 import db from "../db.js";
+import { calculateCpcbAqi } from "../utils/cpcbAqiCalculator.js";
 
 export const findLatestAqiByStation = async (stationId) => {
   const result = await db.query(
@@ -34,10 +35,11 @@ export const findLatestAqiByStation = async (stationId) => {
     }
   });
 
-  // Calculate overall AQI dynamically
-  latestAqi.aqi = Math.max(
-    ...pollutantFields.map(field => Number(latestAqi[field]) || 0)
-  );
+  // Calculate overall AQI dynamically using CPCB breakpoints
+  const cpcb = calculateCpcbAqi(latestAqi);
+  latestAqi.aqi = cpcb.aqi;
+  latestAqi.prominentPollutant = cpcb.prominentPollutant;
+  latestAqi.subIndices = cpcb.subIndices;
 
   return latestAqi;
 };
