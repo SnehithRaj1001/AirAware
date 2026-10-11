@@ -10,47 +10,15 @@ import {
   CartesianGrid,
 } from "recharts";
 import { rtaqiAPI } from "../api.js";
-import { getIndianAqiBand } from "../utils/aqiStandards.js";
+import { getIndianAqiBand, calculateCpcbAqi } from "../utils/aqiStandards.js";
 import "./RtaqiDashboard.css";
 
 
-// Breakpoint and helper functions for AQI rating based on Indian / US EPA standards
+// Calculate overall AQI based on Indian CPCB standard breakpoints
 const calculateOverallAqi = (reading) => {
   if (!reading) return null;
-  // If reading has gas or PM values, we evaluate sub-indices
-  const pm25 = Number(reading.pm25) || 0;
-  const pm10 = Number(reading.pm10) || 0;
-  const no2 = Number(reading.no2_ppm) || 0;
-  const so2 = Number(reading.so2_ppm) || 0;
-  const co = Number(reading.co_ppm) || 0;
-  const o3 = Number(reading.o3_ppm) || 0;
-
-  // Approximate Indian AQI standard breakpoints
-  const calcSubAqi = (val, breaks) => {
-    for (const b of breaks) {
-      if (val <= b.cHigh) {
-        return Math.round(
-          ((b.iHigh - b.iLow) / (b.cHigh - b.cLow)) * (val - b.cLow) + b.iLow
-        );
-      }
-    }
-    return 500;
-  };
-
-  const pm25Breaks = [
-    { cLow: 0, cHigh: 30, iLow: 0, iHigh: 50 },
-    { cLow: 31, cHigh: 60, iLow: 51, iHigh: 100 },
-    { cLow: 61, cHigh: 90, iLow: 101, iHigh: 200 },
-    { cLow: 91, cHigh: 120, iLow: 201, iHigh: 300 },
-    { cLow: 121, cHigh: 250, iLow: 301, iHigh: 400 },
-    { cLow: 251, cHigh: 500, iLow: 401, iHigh: 500 },
-  ];
-
-  const subPm25 = pm25 > 0 ? calcSubAqi(pm25, pm25Breaks) : 0;
-  const subPm10 = pm10 > 0 ? Math.round(pm10 * 0.8) : 0;
-  
-  const estimated = Math.max(subPm25, subPm10, 15);
-  return Math.min(estimated, 500);
+  const cpcb = calculateCpcbAqi(reading);
+  return cpcb.aqi > 0 ? cpcb.aqi : 25;
 };
 
 const getAqiCategory = (aqi) => {

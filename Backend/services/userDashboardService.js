@@ -5,6 +5,7 @@ import db from "../db.js";
 import { findUserById } from "../repositories/userRepository.js";
 import { calculateHealthAdvisory, calculateMultiDayHealthAdvisory } from "./healthAdvisoryService.js";
 import { ForecastService } from "./forecastService.js";
+import { calculateCpcbAqi } from "../utils/cpcbAqiCalculator.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,14 +73,15 @@ export const getUserDashboardData = async (userId) => {
     if (latestAqi.ozone !== undefined) {
       latestAqi.o3 = latestAqi.ozone;
     }
-    // Calculate composite AQI for station
-    latestAqi.aqi = Math.max(
-      ...pollutantFields.map(f => Number(latestAqi[f]) || 0)
-    );
+    // Calculate composite AQI for station using CPCB standard sub-indices
+    const cpcb = calculateCpcbAqi(latestAqi);
+    latestAqi.aqi = cpcb.aqi;
+    latestAqi.prominentPollutant = cpcb.prominentPollutant;
+    latestAqi.subIndices = cpcb.subIndices;
   }
 
   // Compute Personalized Health Advisory based on user health parameters & station predicted/latest AQI
-  const effectiveAqi = latestAqi?.aqi || latestAqi?.pm25 || 60;
+  const effectiveAqi = latestAqi?.aqi || 60;
   
   // Multi-day forecast integration if model exists
   let forecastList = [];
@@ -160,15 +162,8 @@ export const getUserHealthAdvisory = async (userId, customStationId = null) => {
       [station.id]
     );
     if (aqiRes.rows.length > 0) {
-      const row = aqiRes.rows[0];
-      const maxVal = Math.max(
-        Number(row.pm25) || 0,
-        Number(row.pm10) || 0,
-        Number(row.no2) || 0,
-        Number(row.ozone) || 0,
-        Number(row.nh3) || 0
-      );
-      if (maxVal > 0) stationAqi = maxVal;
+      const cpcb = calculateCpcbAqi(aqiRes.rows[0]);
+      if (cpcb.aqi > 0) stationAqi = cpcb.aqi;
     }
   }
 

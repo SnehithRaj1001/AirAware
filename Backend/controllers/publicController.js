@@ -1,4 +1,5 @@
 import db from "../db.js";
+import { calculateCpcbAqi } from "../utils/cpcbAqiCalculator.js";
 
 export const getNews = async (req, res, next) => {
   try {
@@ -78,27 +79,40 @@ export const getAllStations = async (req, res, next) => {
        ORDER BY s.station_name ASC`
     );
 
-    const stations = result.rows.map((row) => ({
-      id: row.id,
-      stationName: row.stationName,
-      city: row.city,
-      fileName: row.fileName,
-      latitude: row.latitude != null ? Number(row.latitude) : null,
-      longitude: row.longitude != null ? Number(row.longitude) : null,
-      address: row.address,
-      latestAqi: row.date
-        ? {
-            date: row.date,
-            pm25: row.pm25 != null ? Number(row.pm25) : null,
-            pm10: row.pm10 != null ? Number(row.pm10) : null,
-            o3: row.o3 != null ? Number(row.o3) : null,
-            no2: row.no2 != null ? Number(row.no2) : null,
-            so2: row.so2 != null ? Number(row.so2) : null,
-            co: row.co != null ? Number(row.co) : null,
-            nh3: row.nh3 != null ? Number(row.nh3) : null,
-          }
-        : null,
-    }));
+    const stations = result.rows.map((row) => {
+      let latestAqi = null;
+      if (row.date) {
+        const pollutants = {
+          pm25: row.pm25 != null ? Number(row.pm25) : null,
+          pm10: row.pm10 != null ? Number(row.pm10) : null,
+          ozone: row.o3 != null ? Number(row.o3) : null,
+          o3: row.o3 != null ? Number(row.o3) : null,
+          no2: row.no2 != null ? Number(row.no2) : null,
+          so2: row.so2 != null ? Number(row.so2) : null,
+          co: row.co != null ? Number(row.co) : null,
+          nh3: row.nh3 != null ? Number(row.nh3) : null,
+        };
+        const cpcb = calculateCpcbAqi(pollutants);
+        latestAqi = {
+          date: row.date,
+          ...pollutants,
+          aqi: cpcb.aqi,
+          prominentPollutant: cpcb.prominentPollutant,
+          subIndices: cpcb.subIndices,
+        };
+      }
+
+      return {
+        id: row.id,
+        stationName: row.stationName,
+        city: row.city,
+        fileName: row.fileName,
+        latitude: row.latitude != null ? Number(row.latitude) : null,
+        longitude: row.longitude != null ? Number(row.longitude) : null,
+        address: row.address,
+        latestAqi,
+      };
+    });
 
     res.json(stations);
   } catch (error) {
@@ -151,6 +165,10 @@ export const getStationWithAqi = async (req, res, next) => {
       if (latestAqi.ozone !== undefined) {
         latestAqi.o3 = latestAqi.ozone;
       }
+      const cpcb = calculateCpcbAqi(latestAqi);
+      latestAqi.aqi = cpcb.aqi;
+      latestAqi.prominentPollutant = cpcb.prominentPollutant;
+      latestAqi.subIndices = cpcb.subIndices;
     }
 
     const aqiHistory = await db.query(

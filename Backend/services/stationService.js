@@ -3,6 +3,7 @@ import {
   findStationById,
   findLatestReadingForAllStations,
 } from "../repositories/stationRepository.js";
+import { calculateCpcbAqi } from "../utils/cpcbAqiCalculator.js";
 
 export const getStations = async () => {
   const stations = await findAllStations();
@@ -21,15 +22,8 @@ export const getStation = async (id) => {
 
 export const getStationsWithLatestAqi = async () => {
   const stations = await findLatestReadingForAllStations();
-  return stations.map((row) => ({
-    station_id: row.station_id,
-    station_name: row.station_name,
-    city: row.city || null,
-    file_name: row.file_name,
-    latitude: row.latitude == null ? null : Number(row.latitude),
-    longitude: row.longitude == null ? null : Number(row.longitude),
-    latest: {
-      date: row.date,
+  return stations.map((row) => {
+    const rawPollutants = {
       pm25: row.pm25 == null ? null : Number(row.pm25),
       pm10: row.pm10 == null ? null : Number(row.pm10),
       ozone: row.ozone == null ? null : Number(row.ozone),
@@ -38,10 +32,23 @@ export const getStationsWithLatestAqi = async () => {
       so2: row.so2 == null ? null : Number(row.so2),
       co: row.co == null ? null : Number(row.co),
       nh3: row.nh3 == null ? null : Number(row.nh3),
-      aqi: Math.max(
-        ...['pm25', 'pm10', 'ozone', 'no2', 'so2', 'co', 'nh3']
-          .map(p => Number(row[p]) || 0)
-      )
-    },
-  }));
+    };
+    const cpcb = calculateCpcbAqi(rawPollutants);
+
+    return {
+      station_id: row.station_id,
+      station_name: row.station_name,
+      city: row.city || null,
+      file_name: row.file_name,
+      latitude: row.latitude == null ? null : Number(row.latitude),
+      longitude: row.longitude == null ? null : Number(row.longitude),
+      latest: {
+        date: row.date,
+        ...rawPollutants,
+        aqi: cpcb.aqi,
+        prominentPollutant: cpcb.prominentPollutant,
+        subIndices: cpcb.subIndices,
+      },
+    };
+  });
 };
