@@ -623,13 +623,13 @@ export default function HealthAdvisoryWidget({ advisory, timeline = [], aiInsigh
                   </div>
                 </div>
 
-                {/* Glanceable Action Plan (DOs & DON'Ts) */}
+                {/* Personalized Action Plan */}
                 <div>
                   <h4 style={{ margin: "0 0 12px", fontSize: "14px", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
-                    📋 Glanceable Action Checklist
+                    📋 Personalized Action Plan
                   </h4>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "12px" }}>
-                    {/* DO THIS Card */}
+                    {/* WHAT YOU CAN DO Card */}
                     <div
                       style={{
                         padding: "16px",
@@ -642,34 +642,57 @@ export default function HealthAdvisoryWidget({ advisory, timeline = [], aiInsigh
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#16a34a", fontWeight: 800, fontSize: "13px" }}>
-                        <span>✅</span> RECOMMENDED ACTIONS (DO)
+                        <span>✅</span> WHAT YOU CAN DO
                       </div>
                       <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12.5px", lineHeight: "1.6", color: "var(--text-main)", display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <li><strong>Airway:</strong> {directives.mask.includes("required") || directives.mask.includes("N95") ? directives.mask : "Carry an N95 mask if visiting dense traffic corridors."}</li>
-                        <li><strong>Home Care:</strong> {directives.ventilation}</li>
-                        <li><strong>Health Protocol:</strong> {directives.medication}</li>
+                        <li><strong>Outdoor Activity:</strong> {overallRiskScore < 25
+                          ? "All outdoor activities are safe. Enjoy open-air exercise and sports."
+                          : overallRiskScore < 50
+                          ? "Light outdoor walks and errands are fine. Prefer afternoon hours when air dispersal is better."
+                          : "Limit outdoor time to essential tasks only. Use well-ventilated indoor spaces for exercise."
+                        }</li>
+                        <li><strong>Home Environment:</strong> {directives.ventilation}</li>
+                        <li><strong>Health Management:</strong> {directives.medication}</li>
+                        {overallRiskScore < 35 && (
+                          <li><strong>Hydration:</strong> Stay well-hydrated throughout the day to support natural airway clearance.</li>
+                        )}
                       </ul>
                     </div>
 
-                    {/* AVOID THIS Card */}
+                    {/* WHAT TO BE CAUTIOUS ABOUT Card */}
                     <div
                       style={{
                         padding: "16px",
                         borderRadius: "10px",
-                        background: "rgba(220, 38, 38, 0.06)",
-                        border: "1px solid rgba(220, 38, 38, 0.3)",
+                        background: overallRiskScore >= 50 ? "rgba(220, 38, 38, 0.06)" : "rgba(245, 158, 11, 0.06)",
+                        border: `1px solid ${overallRiskScore >= 50 ? "rgba(220, 38, 38, 0.3)" : "rgba(245, 158, 11, 0.3)"}`,
                         display: "flex",
                         flexDirection: "column",
                         gap: "10px",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#dc2626", fontWeight: 800, fontSize: "13px" }}>
-                        <span>🚫</span> WHAT TO AVOID (DON'T)
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", color: overallRiskScore >= 50 ? "#dc2626" : "#d97706", fontWeight: 800, fontSize: "13px" }}>
+                        <span>{overallRiskScore >= 50 ? "🚫" : "⚠️"}</span> {overallRiskScore >= 50 ? "AVOID" : "BE CAUTIOUS"}
                       </div>
                       <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12.5px", lineHeight: "1.6", color: "var(--text-main)", display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <li><strong>Physical Exertion:</strong> {directives.outdoor}</li>
-                        <li><strong>High Exposure Windows:</strong> Avoid strenuous outdoor workouts between 6:00 AM - 9:00 AM and 6:00 PM - 9:00 PM during temperature inversion.</li>
-                        <li><strong>Sensitive Triggers:</strong> Avoid high-traffic arterial roads and active construction sites within 35 km.</li>
+                        {overallRiskScore >= 50 ? (
+                          <>
+                            <li><strong>Outdoor Exercise:</strong> Avoid jogging, cycling, or any strenuous activity outdoors. High breathing rates increase pollutant inhalation significantly.</li>
+                            <li><strong>Unprotected Exposure:</strong> Do not step outside without an N95 respirator. Cloth masks do not filter fine particulate matter (PM2.5).</li>
+                            <li><strong>Open Windows:</strong> Keep all windows and doors shut. Use indoor air purifiers if available.</li>
+                          </>
+                        ) : overallRiskScore >= 25 ? (
+                          <>
+                            <li><strong>Intense Workouts:</strong> {directives.outdoor}</li>
+                            <li><strong>Peak Traffic Hours:</strong> Reduce outdoor exposure during morning (7–10 AM) and evening (5–8 PM) rush hours when vehicular emissions peak.</li>
+                            <li><strong>Prolonged Exposure:</strong> Limit continuous outdoor time to under 2 hours. Take indoor breaks between activities.</li>
+                          </>
+                        ) : (
+                          <>
+                            <li><strong>Sensitive Individuals:</strong> Those with respiratory conditions should still carry prescribed relief medication as a precaution.</li>
+                            <li><strong>Prolonged High-Intensity:</strong> Even with good air quality, take hydration breaks during extended outdoor cardio sessions.</li>
+                          </>
+                        )}
                       </ul>
                     </div>
                   </div>
