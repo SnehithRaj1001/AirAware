@@ -74,6 +74,12 @@ export default function Navbar() {
 
           {token && user ? (
             <div className="user-section">
+              <NavLink to="/profile" className="user-name-link" onClick={closeMenu} title="View My Profile">
+                <span className="user-name">
+                  👤 {user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username}
+                </span>
+              </NavLink>
+
               <button
                 type="button"
                 className="theme-toggle-btn"

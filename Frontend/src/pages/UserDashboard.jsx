@@ -12,8 +12,10 @@ import {
 } from "recharts";
 import { userAPI, publicAPI } from "../api.js";
 import { UserDashboardSkeleton } from "../components/Skeleton.jsx";
-import { getIndianAqiColor, getIndianAqiLabel } from "../utils/aqiStandards.js";
+import { getIndianAqiBand, getIndianAqiColor, getIndianAqiLabel } from "../utils/aqiStandards.js";
+import HealthAdvisoryWidget from "../components/HealthAdvisoryWidget.jsx";
 import "./UserDashboard.css";
+
 
 
 const UserDashboard = () => {
@@ -125,6 +127,24 @@ const UserDashboard = () => {
   const activeStationAqi = activeStation?.latestAqi || dashboardData?.latestAqi;
   const userTrends = trendsData?.data || [];
 
+  // Calculate final/composite AQI for the active station
+  const activeOverallAqi = activeStationAqi?.aqi != null
+    ? Math.round(Number(activeStationAqi.aqi))
+    : (activeStationAqi?.pm25 != null
+      ? Math.round(Number(activeStationAqi.pm25))
+      : (dashboardData?.healthAdvisory?.predictedAqi || 50));
+  const activeAqiBand = getIndianAqiBand(activeOverallAqi);
+
+  const stationPollutants = [
+    { key: "pm25", label: "PM2.5", value: activeStationAqi?.pm25, unit: "µg/m³" },
+    { key: "pm10", label: "PM10", value: activeStationAqi?.pm10, unit: "µg/m³" },
+    { key: "no2", label: "NO₂", value: activeStationAqi?.no2, unit: "ppb" },
+    { key: "nh3", label: "NH₃", value: activeStationAqi?.nh3, unit: "µg/m³" },
+    { key: "so2", label: "SO₂", value: activeStationAqi?.so2, unit: "ppb" },
+    { key: "co", label: "CO", value: activeStationAqi?.co, unit: "ppm" },
+    { key: "o3", label: "Ozone", value: activeStationAqi?.o3 ?? activeStationAqi?.ozone, unit: "ppb" },
+  ];
+
   return (
     <main className="page-shell dashboard-main">
       {/* User Welcome Section */}
@@ -147,7 +167,7 @@ const UserDashboard = () => {
           <div className="aqi-card-container">
             <div
               className="aqi-card-main"
-              style={{ borderColor: getAqiColor(activeStationAqi.pm25) }}
+              style={{ borderColor: activeAqiBand.color }}
             >
               <div className="aqi-header">
                 <div>
@@ -166,45 +186,43 @@ const UserDashboard = () => {
                     <p className="station-address-sub">{activeStation.address}</p>
                   )}
                 </div>
-                <span
-                  className="aqi-level-badge"
-                  style={{ backgroundColor: getAqiColor(activeStationAqi.pm25) }}
-                >
-                  {getAqiLevel(activeStationAqi.pm25)}
-                </span>
+
+                <div className="aqi-header-right">
+                  <div
+                    className="aqi-circle"
+                    style={{
+                      borderColor: activeAqiBand.color,
+                      color: activeAqiBand.color,
+                    }}
+                  >
+                    <span className="aqi-circle-value">{activeOverallAqi}</span>
+                    <span className="aqi-circle-label">AQI</span>
+                  </div>
+
+                  <span
+                    className="aqi-level-badge"
+                    style={{
+                      backgroundColor: activeAqiBand.color,
+                      boxShadow: `0 4px 14px ${activeAqiBand.color}35`,
+                    }}
+                  >
+                    {activeAqiBand.label}
+                  </span>
+                </div>
               </div>
 
-              <div className="aqi-grid">
-                <div className="aqi-item">
-                  <span className="aqi-label">PM2.5</span>
-                  <strong className="aqi-value">{activeStationAqi.pm25 != null ? Number(activeStationAqi.pm25).toFixed(1) : "--"}</strong>
-                  <span className="aqi-unit">µg/m³</span>
-                </div>
-                <div className="aqi-item">
-                  <span className="aqi-label">PM10</span>
-                  <strong className="aqi-value">{activeStationAqi.pm10 != null ? Number(activeStationAqi.pm10).toFixed(1) : "--"}</strong>
-                  <span className="aqi-unit">µg/m³</span>
-                </div>
-                <div className="aqi-item">
-                  <span className="aqi-label">O₃</span>
-                  <strong className="aqi-value">{activeStationAqi.o3 != null ? Number(activeStationAqi.o3).toFixed(1) : "--"}</strong>
-                  <span className="aqi-unit">ppb</span>
-                </div>
-                <div className="aqi-item">
-                  <span className="aqi-label">NO₂</span>
-                  <strong className="aqi-value">{activeStationAqi.no2 != null ? Number(activeStationAqi.no2).toFixed(1) : "--"}</strong>
-                  <span className="aqi-unit">ppb</span>
-                </div>
-                <div className="aqi-item">
-                  <span className="aqi-label">SO₂</span>
-                  <strong className="aqi-value">{activeStationAqi.so2 != null ? Number(activeStationAqi.so2).toFixed(1) : "--"}</strong>
-                  <span className="aqi-unit">ppb</span>
-                </div>
-                <div className="aqi-item">
-                  <span className="aqi-label">CO</span>
-                  <strong className="aqi-value">{activeStationAqi.co != null ? Number(activeStationAqi.co).toFixed(1) : "--"}</strong>
-                  <span className="aqi-unit">ppm</span>
-                </div>
+              <div className="aqi-grid pollutant-cards-row">
+                {stationPollutants.map((p) => (
+                  <div key={p.key} className="pollutant-card">
+                    <div className="pollutant-card-header">
+                      <span>{p.label}</span>
+                      <span>{p.unit}</span>
+                    </div>
+                    <div className="pollutant-card-value">
+                      {p.value != null && !isNaN(p.value) ? Number(p.value).toFixed(2) : "--"}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="aqi-footer">
@@ -217,7 +235,21 @@ const UserDashboard = () => {
         </section>
       )}
 
+      {/* Personalized Health Advisory Widget */}
+      {dashboardData?.healthAdvisory && (
+        <HealthAdvisoryWidget
+          advisory={dashboardData.healthAdvisory}
+          timeline={dashboardData.advisoryTimeline || []}
+          aiInsights={dashboardData.aiInsights}
+          user={dashboardData.user}
+          station={activeStation}
+          stations={stations}
+          userCoords={userCoords}
+        />
+      )}
+
       {/* Trends Chart Section */}
+
       {userTrends.length > 0 && (
         <section className="trends-chart-section">
           <h2>30-Day Trends</h2>

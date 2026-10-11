@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { fetchLatestAqi, fetchAqiTrends } from "../api.js";
+import { fetchLatestAqi, fetchAqiTrends, userAPI } from "../api.js";
 import PollutantChart from "../components/PollutantChart.jsx";
 import { StationDetailsSkeleton } from "../components/Skeleton.jsx";
 import { getIndianAqiBand } from "../utils/aqiStandards.js";
@@ -10,6 +10,7 @@ const StationDetails = () => {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [trends, setTrends] = useState([]);
+  const [userAdvisory, setUserAdvisory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,10 +18,17 @@ const StationDetails = () => {
     const loadStationData = async () => {
       try {
         setLoading(true);
-        const [latestPayload, trendsPayload] = await Promise.all([
+        const promises = [
           fetchLatestAqi(id),
           fetchAqiTrends(id)
-        ]);
+        ];
+
+        const token = localStorage.getItem("authToken");
+        if (token) {
+          promises.push(userAPI.getAdvisory(id).catch(() => null));
+        }
+
+        const [latestPayload, trendsPayload, advPayload] = await Promise.all(promises);
         
         setData(latestPayload);
         setTrends(trendsPayload.trends.map(t => ({
@@ -28,6 +36,13 @@ const StationDetails = () => {
           o3: t.o3 ?? t.ozone,
           date: new Date(t.date).toLocaleDateString()
         })));
+
+        if (advPayload?.data?.advisory) {
+          setUserAdvisory({
+            ...advPayload.data.advisory,
+            aiInsights: advPayload.data.aiInsights || advPayload.data.advisory.aiInsights,
+          });
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -141,21 +156,159 @@ const StationDetails = () => {
 
         {/* Sidebar */}
         <div className="details-sidebar">
-          <div className="sidebar-card sidebar-card-light">
-            <h3>Health Advice</h3>
-            <div className="health-advice-box">
-              <p>
-                {aqiValue <= 100 
-                  ? "Air quality is considered satisfactory, and air pollution poses little or no risk."
-                  : "Members of sensitive groups may experience health effects. The general public is less likely to be affected."}
-              </p>
+          {userAdvisory ? (
+            <div
+              className="sidebar-card sidebar-card-light personalized-advisory-card"
+              style={{
+                borderColor: `${userAdvisory.riskColor}60`,
+                background: "var(--bg-card)",
+                boxShadow: `0 4px 20px -2px ${userAdvisory.riskColor}20`,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px' }}>
+                  <span>🛡️</span> Your Advisory
+                </h3>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    color: userAdvisory.riskColor,
+                    background: `${userAdvisory.riskColor}18`,
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    border: `1px solid ${userAdvisory.riskColor}50`,
+                  }}
+                >
+                  {userAdvisory.riskLevel} • {userAdvisory.overallRiskScore}/100
+                </span>
+              </div>
+
+              {userAdvisory.activeAlerts?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+                  {userAdvisory.activeAlerts.map((alt, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        color: userAdvisory.riskColor,
+                        background: `${userAdvisory.riskColor}14`,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        border: `1px solid ${userAdvisory.riskColor}40`,
+                      }}
+                    >
+                      ⚠️ {alt}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div
+                className="health-advice-box"
+                style={{
+                  background: `${userAdvisory.riskColor}12`,
+                  border: `1px solid ${userAdvisory.riskColor}35`,
+                  padding: '14px',
+                  borderRadius: 'var(--radius-md)',
+                }}
+              >
+                <p style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.5', margin: 0 }}>
+                  {userAdvisory.riskSummary}
+                </p>
+              </div>
+
+              <ul className="health-advice-list" style={{ marginTop: '16px', gap: '10px' }}>
+                <li><strong style={{ color: 'var(--text-main)' }}>Activity:</strong> {userAdvisory.directives.outdoor}</li>
+                <li><strong style={{ color: 'var(--text-main)' }}>Mask:</strong> {userAdvisory.directives.mask}</li>
+                <li><strong style={{ color: 'var(--text-main)' }}>Ventilation:</strong> {userAdvisory.directives.ventilation}</li>
+                {userAdvisory.directives.medication && (
+                  <li><strong style={{ color: 'var(--text-main)' }}>Medical:</strong> {userAdvisory.directives.medication}</li>
+                )}
+              </ul>
+
+              {userAdvisory.aiInsights && (
+                <div
+                  style={{
+                    marginTop: '16px',
+                    padding: '14px',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(147, 51, 234, 0.08))',
+                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>✨</span>
+                    <strong style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--accent)' }}>
+                      AI Medical Synthesis
+                    </strong>
+                  </div>
+                  <div style={{ fontSize: '12.5px', lineHeight: '1.5', color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {(() => {
+                      const clean = userAdvisory.aiInsights.trim();
+                      const regex = /(?:^|\n|\s)(\d+)\.\s+([\s\S]*?)(?=(?:\s\d+\.\s+)|(?:\n\s*\*(?:Note|Warning))|$)/gi;
+                      const items = [];
+                      let m;
+                      while ((m = regex.exec(clean)) !== null) {
+                        items.push({ num: m[1], txt: m[2].trim() });
+                      }
+
+                      const renderBold = (str) => {
+                        return str.split(/(\*\*.*?\*\*)/g).map((chunk, i) => {
+                          if (chunk.startsWith('**') && chunk.endsWith('**')) {
+                            return <strong key={i} style={{ color: 'var(--primary)' }}>{chunk.slice(2, -2)}</strong>;
+                          }
+                          return chunk;
+                        });
+                      };
+
+                      if (items.length > 0) {
+                        return items.map((it, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              padding: '8px 10px',
+                              background: 'var(--bg-main)',
+                              borderRadius: '6px',
+                              borderLeft: '3px solid var(--accent)',
+                              fontSize: '12px',
+                              lineHeight: '1.45',
+                            }}
+                          >
+                            <strong>{it.num}. </strong> {renderBold(it.txt)}
+                          </div>
+                        ));
+                      }
+
+                      return clean.split(/\n\s*\n/).map((p, idx) => (
+                        <p key={idx} style={{ margin: 0 }}>{renderBold(p.trim())}</p>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
-            <ul className="health-advice-list">
-              <li>Outdoor activities are encouraged</li>
-              <li>Ventilate your home frequently</li>
-              <li>Minimal risk for sensitive groups</li>
-            </ul>
-          </div>
+          ) : (
+            <div className="sidebar-card sidebar-card-light">
+              <h3>Health Advice</h3>
+              <div className="health-advice-box">
+                <p>
+                  {aqiValue <= 100 
+                    ? "Air quality is considered satisfactory, and air pollution poses little or no risk."
+                    : "Members of sensitive groups may experience health effects. The general public is less likely to be affected."}
+                </p>
+              </div>
+              <ul className="health-advice-list">
+                <li>Outdoor activities are encouraged</li>
+                <li>Ventilate your home frequently</li>
+                <li>Minimal risk for sensitive groups</li>
+              </ul>
+            </div>
+          )}
 
           <div className="sidebar-card sidebar-card-dark">
             <h3>Station Information</h3>

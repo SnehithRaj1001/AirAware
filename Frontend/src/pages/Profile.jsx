@@ -6,6 +6,7 @@ import "./Profile.css";
 export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -22,8 +23,9 @@ export default function Profile() {
     activityLevel: "Moderately Active",
     symptomSensitivity: "Moderate",
     notes: "",
-    symptomLogs: [],
   });
+
+  const [originalData, setOriginalData] = useState(null);
 
   const HEALTH_CONDITION_OPTIONS = [
     "Asthma",
@@ -43,7 +45,7 @@ export default function Profile() {
       const res = await authAPI.getProfile();
       const u = res.data;
 
-      setProfileData({
+      const loaded = {
         firstName: u.first_name || "",
         lastName: u.last_name || "",
         username: u.username || "",
@@ -56,13 +58,24 @@ export default function Profile() {
         activityLevel: u.activity_level || "",
         symptomSensitivity: u.symptom_sensitivity || "",
         notes: u.notes || "",
-        symptomLogs: u.symptomLogs || [],
-      });
+      };
+
+      setProfileData(loaded);
+      setOriginalData(loaded);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to load profile");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancelEdit = () => {
+    if (originalData) {
+      setProfileData(originalData);
+    }
+    setIsEditing(false);
+    setError("");
+    setSuccessMsg("");
   };
 
   const handleChange = (e) => {
@@ -73,6 +86,7 @@ export default function Profile() {
   };
 
   const handleHealthConditionToggle = (condition) => {
+    if (!isEditing) return;
     setProfileData((prev) => {
       let updated = [...prev.healthConditions];
       if (updated.includes(condition)) {
@@ -126,6 +140,8 @@ export default function Profile() {
         })
       );
 
+      setOriginalData({ ...profileData });
+      setIsEditing(false);
       setSuccessMsg("Profile updated successfully!");
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update profile");
@@ -146,13 +162,37 @@ export default function Profile() {
           <div className="profile-avatar-badge">
             {profileData.firstName ? profileData.firstName.charAt(0).toUpperCase() : "U"}
           </div>
-          <div className="profile-hero-details">
+          <div className="profile-hero-details" style={{ flex: 1 }}>
             <h2>{profileData.firstName} {profileData.lastName}</h2>
             <span className="profile-username">@{profileData.username}</span>
             <div className="profile-hero-tags">
               <span className="hero-pill location-pill">📍 {profileData.location || "No location set"}</span>
               <span className="hero-pill sensitivity-pill">⚡ Sensitivity: {profileData.symptomSensitivity}</span>
             </div>
+          </div>
+          <div className="profile-hero-actions">
+            {!isEditing ? (
+              <button
+                type="button"
+                className="btn-edit-toggle"
+                onClick={() => {
+                  setIsEditing(true);
+                  setSuccessMsg("");
+                  setError("");
+                }}
+              >
+                ✏️ Edit Profile
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-cancel-toggle"
+                onClick={handleCancelEdit}
+                disabled={saving}
+              >
+                ✕ Cancel Editing
+              </button>
+            )}
           </div>
         </div>
 
@@ -176,6 +216,8 @@ export default function Profile() {
                   name="firstName"
                   value={profileData.firstName}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                   required
                 />
               </div>
@@ -187,6 +229,8 @@ export default function Profile() {
                   name="lastName"
                   value={profileData.lastName}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                   required
                 />
               </div>
@@ -212,6 +256,8 @@ export default function Profile() {
                   name="email"
                   value={profileData.email}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                   required
                 />
               </div>
@@ -225,6 +271,8 @@ export default function Profile() {
                 name="location"
                 value={profileData.location}
                 onChange={handleChange}
+                disabled={!isEditing}
+                className={!isEditing ? "input-viewonly" : ""}
                 placeholder="e.g. Colaba, Mumbai"
                 required
               />
@@ -234,7 +282,7 @@ export default function Profile() {
           {/* Health & Personal Attributes */}
           <div className="profile-section-card">
             <div className="section-title-wrap">
-              <h3>Health & Lifestyle Personalization</h3>
+              <h3>Health &amp; Lifestyle Personalization</h3>
               <p>Fine-tune environmental sensitivity and health tracking parameters</p>
             </div>
 
@@ -249,6 +297,8 @@ export default function Profile() {
                   max="120"
                   value={profileData.age}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                   placeholder="e.g. 28"
                 />
               </div>
@@ -259,6 +309,8 @@ export default function Profile() {
                   name="gender"
                   value={profileData.gender}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                 >
                   <option value="">---- Select an option ----</option>
                   <option value="Male">Male</option>
@@ -278,7 +330,8 @@ export default function Profile() {
                     <button
                       key={cond}
                       type="button"
-                      className={`chip-button ${isSelected ? "chip-active" : ""}`}
+                      disabled={!isEditing}
+                      className={`chip-button ${isSelected ? "chip-active" : ""} ${!isEditing ? "chip-viewonly" : ""}`}
                       onClick={() => handleHealthConditionToggle(cond)}
                     >
                       {isSelected ? "✓ " : "+ "}{cond}
@@ -296,6 +349,8 @@ export default function Profile() {
                   name="smokingStatus"
                   value={profileData.smokingStatus}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                 >
                   <option value="">---- Select an option ----</option>
                   <option value="Non-smoker">Non-smoker</option>
@@ -311,6 +366,8 @@ export default function Profile() {
                   name="symptomSensitivity"
                   value={profileData.symptomSensitivity}
                   onChange={handleChange}
+                  disabled={!isEditing}
+                  className={!isEditing ? "input-viewonly" : ""}
                 >
                   <option value="">---- Select an option ----</option>
                   <option value="Low">Low (Rarely affected)</option>
@@ -328,6 +385,8 @@ export default function Profile() {
                 name="activityLevel"
                 value={profileData.activityLevel}
                 onChange={handleChange}
+                disabled={!isEditing}
+                className={!isEditing ? "input-viewonly" : ""}
               >
                 <option value="">---- Select an option ----</option>
                 <option value="Sedentary">Sedentary (Little or no exercise)</option>
@@ -345,95 +404,29 @@ export default function Profile() {
                 rows="3"
                 value={profileData.notes}
                 onChange={handleChange}
+                disabled={!isEditing}
+                className={!isEditing ? "input-viewonly" : ""}
                 placeholder="e.g., Inhaler prescribed for high AQI days, doctor instructions, known triggers..."
               />
             </div>
 
-            <div className="profile-actions-bar">
-              <button type="submit" disabled={saving} className="btn-save-profile">
-                {saving ? "Saving Changes..." : "Save Profile"}
-              </button>
-            </div>
+            {isEditing && (
+              <div className="profile-actions-bar">
+                <button
+                  type="button"
+                  className="btn-cancel-edit"
+                  onClick={handleCancelEdit}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="btn-save-profile">
+                  {saving ? "Saving Changes..." : "Save Changes"}
+                </button>
+              </div>
+            )}
           </div>
         </form>
-
-        {/* Recent Symptom Check-ins Card */}
-        {profileData.symptomLogs && profileData.symptomLogs.length > 0 && (
-          <div className="profile-section-card logs-card">
-            <div className="section-title-wrap">
-              <h3>Recent Symptom Logs</h3>
-              <p>Historical check-ins recorded for your profile</p>
-            </div>
-
-            <div className="recent-logs-list">
-              {profileData.symptomLogs.map((log) => {
-                let parsedSeverity = null;
-                try {
-                  parsedSeverity =
-                    typeof log.symptom_severity === "string" &&
-                    log.symptom_severity.startsWith("{")
-                      ? JSON.parse(log.symptom_severity)
-                      : log.symptom_severity;
-                } catch {
-                  parsedSeverity = log.symptom_severity;
-                }
-
-                return (
-                  <div key={log.id} className="log-history-item">
-                    <div className="log-top-row">
-                      <span className="log-date">
-                        📅 {new Date(log.timestamp).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                      {log.medication_taken && (
-                        <span className="medication-badge">💊 Medication Taken</span>
-                      )}
-                    </div>
-
-                    <div className="log-details-grid">
-                      <div className="log-col">
-                        <span className="log-label">Outdoor Exposure</span>
-                        <strong>{log.outdoor_time_hours != null ? `${log.outdoor_time_hours} hrs/day` : "N/A"}</strong>
-                      </div>
-                      <div className="log-col log-col-symptoms">
-                        <span className="log-label">Symptoms & Severity</span>
-                        {log.symptoms_logged && log.symptoms_logged.length > 0 ? (
-                          <div className="logged-symptoms-chips">
-                            {log.symptoms_logged.map((sym) => {
-                              const sev =
-                                typeof parsedSeverity === "object" && parsedSeverity !== null
-                                  ? parsedSeverity[sym] || "Mild"
-                                  : parsedSeverity || "Mild";
-                              return (
-                                <span key={sym} className={`history-sym-chip sev-${sev.toLowerCase()}`}>
-                                  {sym}: <strong>{sev}</strong>
-                                </span>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <em>No symptoms reported</em>
-                        )}
-                      </div>
-                    </div>
-
-                    {log.notes && (
-                      <div className="log-notes-snippet">
-                        <span className="log-label">Notes & Instructions:</span>
-                        <p>{log.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -57,8 +57,10 @@ export const authAPI = {
 // User APIs (authenticated)
 export const userAPI = {
   getDashboard: () => apiClient.get("/user/dashboard"),
+  getAdvisory: (stationId) => apiClient.get("/user/advisory", { params: stationId ? { stationId } : {} }),
   getTrends: () => apiClient.get("/user/trends"),
 };
+
 
 // Public APIs
 export const publicAPI = {

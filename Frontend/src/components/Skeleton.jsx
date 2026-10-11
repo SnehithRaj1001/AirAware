@@ -122,14 +122,141 @@ export const StationDetailsSkeleton = () => (
 );
 
 export const ProfileSkeleton = () => (
-  <main className="page-shell">
-    <div className="skeleton-hero">
-      <Skeleton width="220px" height="36px" style={{ marginBottom: '10px' }} />
-      <Skeleton width="340px" height="20px" />
-    </div>
+  <div className="profile-page-shell">
+    <div className="profile-container">
+      {/* Profile Header Hero Card Skeleton */}
+      <div
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
+          borderRadius: "20px",
+          padding: "32px",
+          display: "flex",
+          alignItems: "center",
+          gap: "24px",
+        }}
+      >
+        <Skeleton width="72px" height="72px" borderRadius="50%" style={{ flexShrink: 0 }} />
+        <div style={{ flex: 1 }}>
+          <Skeleton width="220px" height="28px" style={{ marginBottom: "8px" }} />
+          <Skeleton width="120px" height="16px" style={{ marginBottom: "14px" }} />
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Skeleton width="130px" height="26px" borderRadius="20px" />
+            <Skeleton width="160px" height="26px" borderRadius="20px" />
+          </div>
+        </div>
+      </div>
 
-    <div style={{ maxWidth: '780px', margin: '24px auto 0' }}>
-      <Skeleton height="540px" borderRadius="16px" />
+      {/* Account Details Card Skeleton */}
+      <div
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
+          borderRadius: "20px",
+          padding: "32px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+        }}
+      >
+        <div>
+          <Skeleton width="180px" height="22px" style={{ marginBottom: "6px" }} />
+          <Skeleton width="280px" height="14px" />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div>
+            <Skeleton width="90px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+          <div>
+            <Skeleton width="90px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div>
+            <Skeleton width="80px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+          <div>
+            <Skeleton width="110px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+        </div>
+
+        <div>
+          <Skeleton width="180px" height="14px" style={{ marginBottom: "8px" }} />
+          <Skeleton height="46px" borderRadius="10px" />
+        </div>
+      </div>
+
+      {/* Health & Personalization Card Skeleton */}
+      <div
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
+          borderRadius: "20px",
+          padding: "32px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+        }}
+      >
+        <div>
+          <Skeleton width="240px" height="22px" style={{ marginBottom: "6px" }} />
+          <Skeleton width="340px" height="14px" />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div>
+            <Skeleton width="60px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+          <div>
+            <Skeleton width="70px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+        </div>
+
+        {/* Condition Chips */}
+        <div>
+          <Skeleton width="200px" height="14px" style={{ marginBottom: "12px" }} />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            <Skeleton width="90px" height="36px" borderRadius="20px" />
+            <Skeleton width="80px" height="36px" borderRadius="20px" />
+            <Skeleton width="120px" height="36px" borderRadius="20px" />
+            <Skeleton width="95px" height="36px" borderRadius="20px" />
+            <Skeleton width="85px" height="36px" borderRadius="20px" />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div>
+            <Skeleton width="120px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+          <div>
+            <Skeleton width="160px" height="14px" style={{ marginBottom: "8px" }} />
+            <Skeleton height="46px" borderRadius="10px" />
+          </div>
+        </div>
+
+        <div>
+          <Skeleton width="140px" height="14px" style={{ marginBottom: "8px" }} />
+          <Skeleton height="46px" borderRadius="10px" />
+        </div>
+
+        <div>
+          <Skeleton width="190px" height="14px" style={{ marginBottom: "8px" }} />
+          <Skeleton height="86px" borderRadius="10px" />
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+          <Skeleton width="150px" height="46px" borderRadius="12px" />
+        </div>
+      </div>
     </div>
-  </main>
+  </div>
 );

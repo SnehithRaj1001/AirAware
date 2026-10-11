@@ -65,10 +65,11 @@ export const getAllStations = async (req, res, next) => {
               a.ozone AS o3,
               a.no2,
               a.so2,
-              a.co
+              a.co,
+              a.nh3
        FROM stations s
        LEFT JOIN LATERAL (
-         SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co
+         SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co, nh3
          FROM aqi_data
          WHERE station_id = s.id
          ORDER BY recorded_at DESC NULLS LAST
@@ -94,6 +95,7 @@ export const getAllStations = async (req, res, next) => {
             no2: row.no2 != null ? Number(row.no2) : null,
             so2: row.so2 != null ? Number(row.so2) : null,
             co: row.co != null ? Number(row.co) : null,
+            nh3: row.nh3 != null ? Number(row.nh3) : null,
           }
         : null,
     }));
@@ -122,7 +124,7 @@ export const getStationWithAqi = async (req, res, next) => {
     }
 
     const aqiResult = await db.query(
-      `SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co, station_id
+      `SELECT recorded_at AS date, pm25, pm10, ozone, no2, so2, co, nh3, station_id
        FROM aqi_data
        WHERE station_id = $1
        ORDER BY recorded_at DESC NULLS LAST
@@ -134,7 +136,7 @@ export const getStationWithAqi = async (req, res, next) => {
     let latestAqi = null;
 
     if (rows.length > 0) {
-      const pollutantFields = ['pm25', 'pm10', 'ozone', 'no2', 'so2', 'co'];
+      const pollutantFields = ['pm25', 'pm10', 'ozone', 'no2', 'so2', 'co', 'nh3'];
       latestAqi = { date: rows[0].date };
 
       pollutantFields.forEach(field => {

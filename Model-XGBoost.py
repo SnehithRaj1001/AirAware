@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from xgboost import XGBRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import warnings
 import os
 import sys
@@ -41,10 +41,10 @@ def load_data_from_db(station_id):
             sys.exit(1)
         conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         query = f"""
-            SELECT recorded_at as "{DATE_COL}", 
-                   pm25 as "PM2.5", pm10 as "PM10", no2 as "NO2", 
+            SELECT recorded_at as "{DATE_COL}",
+                   pm25 as "PM2.5", pm10 as "PM10", no2 as "NO2",
                    nh3 as "NH3", so2 as "SO2", co as "CO", ozone as "Ozone"
-            FROM aqi_data 
+            FROM aqi_data
             WHERE station_id = {station_id}
             ORDER BY recorded_at ASC
         """
@@ -93,9 +93,9 @@ def train_and_evaluate(df, targets):
     metrics = {}
     predictions = {}
 
-    print("\n" + "="*65)
-    print(f"{'Parameter':<12} {'Window':<12} {'RMSE':>10} {'MAE':>10}")
-    print("="*65)
+    print("\n" + "=" * 105)
+    print(f"{'Parameter':<12} {'Window':<12} {'RMSE':>12} {'MAE':>12} {'R2':>12} {'Persistence RMSE':>20} {'RMSE Difference':>18}")
+    print("=" * 105)
 
     for target in targets:
         target_df = df_feat
@@ -103,50 +103,74 @@ def train_and_evaluate(df, targets):
 
         split_idx = int(len(target_df) * 0.8)
         train = target_df.iloc[:split_idx]
-        test  = target_df.iloc[split_idx:]
+        test = target_df.iloc[split_idx:]
 
         X_train = train[feature_cols]
-        X_test  = test[feature_cols]
+        X_test = test[feature_cols]
         y_train_log = np.log1p(train[target])
-        y_test_raw  = test[target]
+        y_test_raw = test[target]
 
         model = XGBRegressor(
             n_estimators=200,
-            learning_rate=0.05,
+            learning_rate=0.02,
             max_depth=4,
-            subsample=0.8,
+            subsample=0.7,
             colsample_bytree=0.8,
             n_jobs=-1,
             random_state=42
         )
-        
-        model.fit(X_train, y_train_log, 
-                  eval_set=[(X_test, np.log1p(y_test_raw))], verbose=False)
+
+        model.fit(
+            X_train,
+            y_train_log,
+            eval_set=[(X_test, np.log1p(y_test_raw))],
+            verbose=False
+        )
 
         y_pred_log = model.predict(X_test)
         y_pred = np.expm1(y_pred_log)
         y_pred = np.clip(y_pred, 0, None)
 
         rmse = np.sqrt(mean_squared_error(y_test_raw, y_pred))
-        mae  = mean_absolute_error(y_test_raw, y_pred)
+        mae = mean_absolute_error(y_test_raw, y_pred)
+        r2 = r2_score(y_test_raw, y_pred)
 
-        models[target]      = model
-        metrics[target]     = {"RMSE": rmse, "MAE": mae, "Window": window_name}
-        predictions[target] = {"actual": y_test_raw.values, "predicted": y_pred}
+        persistence_pred = test[f"{target}_lag1"]
+        persistence_rmse = np.sqrt(
+            mean_squared_error(y_test_raw, persistence_pred)
+        )
 
-        print(f"{target:<12} {window_name:<12} {rmse:>10.3f} {mae:>10.3f}")
+        rmse_difference = persistence_rmse - rmse
 
-    print("="*65)
+        models[target] = model
+        metrics[target] = {
+            "RMSE": rmse,
+            "MAE": mae,
+            "R2": r2,
+            "Persistence_RMSE": persistence_rmse,
+            "RMSE_Difference": rmse_difference,
+            "Window": window_name
+        }
+
+        predictions[target] = {
+            "actual": y_test_raw.values,
+            "predicted": y_pred,
+            "persistence": persistence_pred.values
+        }
+
+        print(f"{target:<12} {window_name:<12} {rmse:>12.3f} {mae:>12.3f} {r2:>12.3f} {persistence_rmse:>20.3f} {rmse_difference:>18.3f}")
+
+    print("=" * 105)
     return models, metrics, predictions, df_feat, feature_cols
 
 # ── FUTURE FORECAST ───────────────────────────────────────────────────────────
 def forecast_future(df, models, feature_cols, targets):
     future_df = df.copy()
-    last_date  = df[DATE_COL].max()
+    last_date = df[DATE_COL].max()
     forecast_rows = []
 
     df_feat_full = make_features(df, targets)
-    
+
     for target in targets:
         target_df = df_feat_full
         X_train_full = target_df[feature_cols]
@@ -158,24 +182,26 @@ def forecast_future(df, models, feature_cols, targets):
         temp_df = make_features(future_df, targets)
         last_row = temp_df.iloc[[-1]].copy()
 
-        last_row[DATE_COL]      = next_date
+        last_row[DATE_COL] = next_date
         last_row["day_of_week"] = next_date.dayofweek
-        last_row["month"]       = next_date.month
+        last_row["month"] = next_date.month
         last_row["day_of_year"] = next_date.timetuple().tm_yday
-        last_row["dow_sin"]     = np.sin(2 * np.pi * next_date.dayofweek / 7)
-        last_row["dow_cos"]     = np.cos(2 * np.pi * next_date.dayofweek / 7)
-        last_row["month_sin"]   = np.sin(2 * np.pi * next_date.month / 12)
-        last_row["month_cos"]   = np.cos(2 * np.pi * next_date.month / 12)
+        last_row["dow_sin"] = np.sin(2 * np.pi * next_date.dayofweek / 7)
+        last_row["dow_cos"] = np.cos(2 * np.pi * next_date.dayofweek / 7)
+        last_row["month_sin"] = np.sin(2 * np.pi * next_date.month / 12)
+        last_row["month_cos"] = np.cos(2 * np.pi * next_date.month / 12)
 
         X_next = last_row[feature_cols]
 
         row = {DATE_COL: next_date}
+
         for target in targets:
             pred_log = models[target].predict(X_next)[0]
             pred = np.expm1(pred_log)
             row[target] = round(max(pred, 0), 2)
 
         forecast_rows.append(row)
+
         new_row = pd.DataFrame([{DATE_COL: next_date, **{t: row[t] for t in targets}}])
         future_df = pd.concat([future_df, new_row], ignore_index=True)
 
@@ -188,7 +214,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     input_val = sys.argv[1]
-    
+
     if input_val.isdigit():
         station_id = int(input_val)
         station_name = f"station_{station_id}"
@@ -206,19 +232,19 @@ if __name__ == "__main__":
     print("\nGenerating forecast...")
     forecast_df = forecast_future(df, models, feature_cols, available_targets)
 
-    print("\n" + "="*45)
+    print("\n" + "=" * 45)
     print("FUTURE FORECAST")
-    print("="*45)
+    print("=" * 45)
     print(forecast_df.to_string(index=False))
-    print("="*45)
+    print("=" * 45)
 
     # Ensure models directory exists in the root (where this script is)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     models_dir = os.path.join(script_dir, "models")
     os.makedirs(models_dir, exist_ok=True)
-    
+
     model_path = os.path.join(models_dir, f"{station_name}.pkl")
     joblib.dump(models, model_path)
+
     print(f"\nTrained models saved to {model_path}")
     print("\nDone.")
-
